@@ -1,0 +1,54 @@
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache/options
+.vs/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Rider
+.idea/
+*.sln.iml
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# ReSharper
+_ReSharper*/
+*.DotSettings.user
+
+# Local environment
+.env
+.env.local
+
+# Mac/OS specific
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Test Results
+TestResults/
+
+# Clean Architecture specific
+src/*/bin/
+src/*/obj/
+
+# Application settings
+appsettings.Development.json
