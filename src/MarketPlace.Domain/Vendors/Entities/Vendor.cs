@@ -2,18 +2,20 @@ using MarketPlace.Domain.Common.BaseErrors.Errors;
 using MarketPlace.Domain.Common.Entities;
 using MarketPlace.Domain.Common.ResultPattern;
 using MarketPlace.Domain.Products.Entities;
+using MarketPlace.Domain.Products.ValueObjects;
 using MarketPlace.Domain.Vendors.Enums;
 using MarketPlace.Domain.Vendors.Events;
+using MarketPlace.Domain.Vendors.ValueObjects;
 
 namespace MarketPlace.Domain.Vendors.Entities;
 
 
-public sealed class Vendor : AggregateRoot<Guid>
+public sealed class Vendor : AggregateRoot<VendorId>
 {
     public string LegalName { get; private set; } = string.Empty;
     public string TradeName { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
-    public string ProfileUrl { get; private set; } = string.Empty;
+    public string? ProfileUrl { get; private set; } = string.Empty;
 
 
     public VendorStatus Status { get; private set; } = VendorStatus.Inactive;
@@ -28,7 +30,7 @@ public sealed class Vendor : AggregateRoot<Guid>
 
 
     private Vendor(
-     Guid id,
+     VendorId id,
      string legalName,
      string tradeName,
      string description,
@@ -49,6 +51,7 @@ public sealed class Vendor : AggregateRoot<Guid>
     private Vendor() { }
 
     public static Result<Vendor> Create(
+       
       string legalName, string tradeName, string description,
       string profileUrl, string businessAddress, string contactEmail) // status param removed
     {
@@ -58,7 +61,7 @@ public sealed class Vendor : AggregateRoot<Guid>
         if (contactEmail == null || !contactEmail.Contains("@"))
             return Result<Vendor>.Failure(VendorError.VendorContactEmailIsInvalid());
 
-        var vendor = new Vendor(Guid.NewGuid(), legalName, tradeName, description,
+        var vendor = new Vendor(VendorId.Create(), legalName, tradeName, description,
             profileUrl, VendorStatus.Pending, businessAddress, contactEmail);
 
         vendor.AddDomainEvent(new VendorRegisteredEvent(vendor.Id));

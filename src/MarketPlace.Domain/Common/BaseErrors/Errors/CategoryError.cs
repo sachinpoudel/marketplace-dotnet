@@ -18,4 +18,16 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.BadRequest("Category is already active.", "The category is already active.");
     }
+    public static BaseError CategoryDoesNotExist()
+    {
+        return BaseError.BadRequest("Category does not exist.", "The specified category does not exist.");
+    }
+    public static BaseError CategoryMustBeLeaf()
+    {
+        return BaseError.BadRequest("Category must be a leaf category.", "The specified category must be a leaf category (cannot have subcategories).");
+    }
+    public static BaseError ParentCategoryDoesNotExist()
+    {
+        return BaseError.BadRequest("Parent category does not exist.", "The specified parent category does not exist    .");
+    }
 }

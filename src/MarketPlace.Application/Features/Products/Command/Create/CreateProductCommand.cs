@@ -1,0 +1,16 @@
+using MarketPlace.Domain.Categories.ValueObjects;
+using MarketPlace.Domain.Common.ResultPattern;
+using MarketPlace.Domain.Products.ValueObjects;
+using MarketPlace.Domain.Vendors.ValueObjects;
+using MediatR;
+
+namespace MarketPlace.Application.Features.Products.Command.Create;
+
+
+public record CreateProductCommand(string Name, string Description, decimal Price,
+int StockQuantity,
+string Sku,
+string? ImageUrl,
+string Tags,
+
+ IReadOnlyList<CategoryId> CategoryIds, VendorId VendorId) : IRequest<Result<ProductId>>;       
