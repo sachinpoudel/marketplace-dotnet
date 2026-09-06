@@ -1,3 +1,4 @@
+using MarketPlace.Application.Features.Products.Dtos;
 using MarketPlace.Domain.Categories.ValueObjects;
 using MarketPlace.Domain.Common.ResultPattern;
 using MarketPlace.Domain.Products.ValueObjects;
@@ -13,4 +14,4 @@ string Sku,
 string? ImageUrl,
 string Tags,
 
- IReadOnlyList<CategoryId> CategoryIds, VendorId VendorId) : IRequest<Result<ProductId>>;       
+ IReadOnlyList<CategoryId> CategoryIds, VendorId VendorId) : IRequest<Result<ProductsListItemDto>>;       

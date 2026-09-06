@@ -11,5 +11,5 @@ public interface ICategoryRepository
     Task<bool> ExistsAsync(CategoryId categoryId, CancellationToken cancellationToken = default);
     Task AddAsync(Category category, CancellationToken cancellationToken = default);
     Task<bool> HasChildrenAsync(CategoryId categoryId, CancellationToken cancellationToken = default);
-    Task<bool> HasParentAsync(CategoryId categoryId, CancellationToken cancellationToken = default);
+    Task<int> CountValidLeafCategoriesAsync(IEnumerable<CategoryId> categoryIds, CancellationToken cancellationToken = default);
 }

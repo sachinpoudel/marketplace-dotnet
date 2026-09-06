@@ -5,7 +5,7 @@ public record VendorDetailDto(
     string LegalName,
     string TradeName,
     string Description,
-    string ProfileUrl,
+    string? ProfileUrl,
    
     string Email,
   

@@ -1,5 +1,6 @@
 using FluentValidation;
 using MarketPlace.Application.Common.Interfaces.Repositories;
+using MarketPlace.Domain.Categories.ValueObjects;
 
 namespace MarketPlace.Application.Features.Categories.Command;
 
@@ -18,11 +19,11 @@ public class CreateCategoryValidator : AbstractValidator<CreateCategoryCommand>
         RuleFor(x => x.Description)
             .MaximumLength(500).WithMessage("Category description must not exceed 500 characters.");
 
-        RuleFor(x => x.ParentCategoryId) 
+        _ = RuleFor(x => x.ParentCategoryId)
             .MustAsync(async (parentId, cancellationToken) =>
             {
                 if (parentId == null) return true;
-                return await _categoryRepository.ExistsAsync(parentId.Value, cancellationToken);
+                return await _categoryRepository.ExistsAsync(CategoryId.Create(parentId.Value), cancellationToken);
             })
             .WithMessage("Parent category does not exist.");
     }

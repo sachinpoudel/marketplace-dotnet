@@ -30,4 +30,8 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.BadRequest("Parent category does not exist.", "The specified parent category does not exist    .");
     }
+    public static BaseError InvalidOrNonLeafCategories()
+    {
+        return BaseError.BadRequest("Invalid or non-leaf categories.", "One or more of the specified categories are invalid or not leaf categories.");
+    }
 }

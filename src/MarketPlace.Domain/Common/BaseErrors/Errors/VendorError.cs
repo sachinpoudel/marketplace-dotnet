@@ -22,13 +22,9 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.BadRequest("Invalid status transition.", "The vendor status transition is not allowed.");
     }
-    public static BaseError VendorNotFound()
+    public static BaseError VendorNotFoundOrInactive()
     {
         return BaseError.NotFound("Vendor not found.", "The specified vendor does not exist.");
-    }
-    public static BaseError VendorNotActive()
-    {
-        return BaseError.BadRequest("Vendor is not active.", "The specified vendor is not active.");
     }
     public static BaseError VendorAlreadyExists()
     {

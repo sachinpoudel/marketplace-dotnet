@@ -8,5 +8,9 @@ ProductId Id,
 string Name,
 decimal Price,
 string ImageUrl,
-string Status
+string Status,
+string Description,
+string Tags,
+string Sku,
+int StockQuantity
 );
