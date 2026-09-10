@@ -1,4 +1,4 @@
-namespace MarketPlace.Domain.Options;
+namespace MarketPlace.Infrastructure.Persistence.Options;
 
 
 public class ConnStringOption

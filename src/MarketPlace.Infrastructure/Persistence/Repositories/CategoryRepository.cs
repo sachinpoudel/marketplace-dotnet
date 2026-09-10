@@ -36,13 +36,13 @@ public sealed class CategoryRepository(ApplicationDbContext context) : ICategory
         if (ids.Count == 0)
             return 0;
 
-        var validIds = ids.Select(id => id.Value).ToHashSet();
+        var validIds = ids.Select(id => id).ToHashSet();
 
         return await context.Categories
-            .Where(c => validIds.Contains(c.Id.Value))
+            .Where(c => validIds.Contains(c.Id))
             .Where(c => !context.Categories.Any(child =>
                 child.ParentCategoryId != null &&
-                child.ParentCategoryId.Value == c.Id.Value))
-            .CountAsync(cancellationToken);
+                child.ParentCategoryId == c.Id))
+            .CountAsync(cancellationToken); //works by 
     }
 }

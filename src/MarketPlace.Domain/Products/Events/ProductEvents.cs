@@ -1,4 +1,4 @@
-using MarketPlace.Domain.Common.Interfaces;
+using MarketPlace.Domain.Common.Entities;
 using MarketPlace.Domain.Products.ValueObjects;
 using MarketPlace.Domain.Vendors.ValueObjects;
 

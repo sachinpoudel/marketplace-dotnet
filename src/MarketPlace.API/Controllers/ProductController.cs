@@ -17,23 +17,11 @@ public class ProductController(IMediator mediator) : ControllerBase
 
 
     [HttpPost]
-    public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateProduct( CreateProductCommand request, CancellationToken cancellationToken)
     {
-        var product = new CreateProductCommand(
+       
 
-            request.Name,
-            request.Description,
-            request.Price,
-            request.StockQuantity,
-
-
-            request.Sku,
-            request.ImageUrl,
-            request.Tags,
-            request.CategoryIds,
-            request.VendorId);
-
-        var result = await mediator.Send(product, cancellationToken);
+        var result = await mediator.Send(request, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
     }
 

@@ -1,15 +1,21 @@
 using MarketPlace.Domain.Categories.Entities;
 using MarketPlace.Domain.Products.Entities;
 using MarketPlace.Domain.Vendors.Entities;
+using MarketPlace.Infrastructure.Identity;
+using MarketPlace.Infrastructure.Identity.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace MarketPlace.Infrastructure.Persistence;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>,Guid>(options) 
 {
      internal protected DbSet<Product> Products { get; set; } = null!;
      internal protected DbSet<Vendor> Vendors { get; set; } = null!;
-     internal protected DbSet<Category> Categories { get; set; } = null!;
+    internal protected DbSet<Category> Categories { get; set; } = null!;
+     internal protected DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

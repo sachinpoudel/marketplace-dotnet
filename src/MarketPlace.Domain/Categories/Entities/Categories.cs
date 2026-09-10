@@ -19,7 +19,7 @@ public class Category : AggregateRoot<CategoryId>
 
     public int DisplayOrder { get; private set; } = 0;
     public bool IsActive { get; private set; }
-    public CategoryId ParentCategoryId { get; private set; } = null;
+    public CategoryId? ParentCategoryId { get; private set; } 
 
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
@@ -29,7 +29,7 @@ public class Category : AggregateRoot<CategoryId>
 
     private Category() { }
 
-private Category(
+public  Category(
         CategoryId id,
         string name,
         string? description,
@@ -46,7 +46,7 @@ private Category(
     }
 
 
-    public static Result<Category> Create(string name, string? description = null, CategoryId? parentCategoryId = null, List<CategoryId> children = null)
+    public static Result<Category> Create(string name, string? description = null, CategoryId? parentCategoryId = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             return Result<Category>.Failure(CategoryError.CategoryNameIsRequired());
@@ -84,7 +84,7 @@ private Category(
     }
     public Result MoveToParentCategory(CategoryId? newParentCategoryId)
     {
-        if (newParentCategoryId.Equals(Id))
+        if (newParentCategoryId!.Equals(Id))
             return Result.Failure(CategoryError.CategoryCannotBeOwnParent());
 
 

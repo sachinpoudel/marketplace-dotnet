@@ -41,7 +41,6 @@ public class UnitOfWork : IUnitOfWork, IDisposable
             }
             else
             {
-                // Fallback if SaveChangesAsync is used as the implicit atomic unit
                 await _context.SaveChangesAsync(cancellationToken);
             }
         }
@@ -65,7 +64,6 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         }
     }
 
-    // Optional helper to start an explicit transaction if needed
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         _currentTransaction = await _context.Database.BeginTransactionAsync(cancellationToken);

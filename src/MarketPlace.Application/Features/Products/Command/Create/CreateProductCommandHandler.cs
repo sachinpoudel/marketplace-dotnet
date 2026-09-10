@@ -42,9 +42,12 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
    public async Task<Result<ProductsListItemDto>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
         // Request already carries strongly-typed value objects
-        var categoryIds = request.CategoryIds.ToList();
-        var vendorId = request.VendorId;
+        var categoryIds = request.CategoryIds
+            .Select(CategoryId.Create)
+            .ToList();
 
+        var vendorId = VendorId.Create(request.VendorId);
+        
         var validCategoryCount = await _category_repository.CountValidLeafCategoriesAsync(categoryIds, cancellationToken);
         if (validCategoryCount != categoryIds.Count)
             return Result<ProductsListItemDto>.Failure(CategoryError.InvalidOrNonLeafCategories());

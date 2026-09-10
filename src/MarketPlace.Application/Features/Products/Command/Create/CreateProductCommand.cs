@@ -14,4 +14,4 @@ string Sku,
 string? ImageUrl,
 string Tags,
 
- IReadOnlyList<CategoryId> CategoryIds, VendorId VendorId) : IRequest<Result<ProductsListItemDto>>;       
+ IReadOnlyList<Guid> CategoryIds, Guid VendorId) : IRequest<Result<ProductsListItemDto>>;       

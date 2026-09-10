@@ -1,6 +1,6 @@
-namespace MarketPlace.Domain.Common.Interfaces;
+namespace MarketPlace.Domain.Common.Entities;
 
-public interface IHasDomainEvents
+public interface IHasDomainEvents 
 {
     IReadOnlyList<IDomainEvent> DomainEvents { get; }
 

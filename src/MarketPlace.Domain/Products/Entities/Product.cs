@@ -31,8 +31,7 @@ public sealed class Product : AggregateRoot<ProductId>
     public string Tags { get; private set; } = default!;
     public ProductStatus Status { get; private set; }
 
-    // Reference other aggregates by Id only — never by object navigation.
-    // Need vendor name on a product listing? That's a query-side join, not this.
+
 
     public ICollection<CategoryId> CategoryIds => _categoryIds;
     public ICollection<ReviewsId> ReviewsId => _reviewsIds;
@@ -74,7 +73,7 @@ public sealed class Product : AggregateRoot<ProductId>
         decimal price,
         int stockQuantity,
         string sku,
-        IEnumerable<Img> images ,
+        IEnumerable<Img> images,
         string tags,
         VendorId vendorId,
     IEnumerable<CategoryId> categoryIds
@@ -127,7 +126,7 @@ public sealed class Product : AggregateRoot<ProductId>
         Images = new List<Img>(images);
         UpdatedAt = DateTime.UtcNow;
     }
-  
+
     public void AdjustStock(int quantityDelta)
     {
         var newQuantity = StockQuantity + quantityDelta;

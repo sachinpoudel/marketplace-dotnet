@@ -1,5 +1,6 @@
-using MarketPlace.Domain.Options;
+
 using MarketPlace.Infrastructure.Persistence;
+using MarketPlace.Infrastructure.Persistence.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

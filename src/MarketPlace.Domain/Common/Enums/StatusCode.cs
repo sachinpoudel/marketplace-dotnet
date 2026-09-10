@@ -7,5 +7,7 @@ public enum StatusCode
     Forbidden = 403,
     NotFound = 404,
     Conflict = 409,
-    InternalServerError = 500
-}
+    InternalServerError = 500,
+
+    Validation = 422,
+    ServiceUnavailable = 503}
