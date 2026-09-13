@@ -43,6 +43,6 @@ public sealed class CategoryRepository(ApplicationDbContext context) : ICategory
             .Where(c => !context.Categories.Any(child =>
                 child.ParentCategoryId != null &&
                 child.ParentCategoryId == c.Id))
-            .CountAsync(cancellationToken); //works by 
+            .CountAsync(cancellationToken); 
     }
 }

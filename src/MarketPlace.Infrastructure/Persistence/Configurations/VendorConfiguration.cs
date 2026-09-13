@@ -1,5 +1,6 @@
 using MarketPlace.Domain.Vendors.Entities;
 using MarketPlace.Domain.Vendors.ValueObjects;
+using MarketPlace.Infrastructure.Identity.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,6 +15,13 @@ public class VendorConfiguration : IEntityTypeConfiguration<Vendor>
         builder.Property(v => v.Id)
             .HasConversion(id => id.Value, value => VendorId.Create(value))
             .ValueGeneratedNever();
+
+        builder.HasMany(x => x.Products)
+            .WithOne()
+            .HasForeignKey(p => p.VendorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne<ApplicationUser>().WithMany().HasForeignKey(v => v.UserId).OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(v => v.LegalName).IsRequired().HasMaxLength(100);
         builder.Property(v => v.TradeName).IsRequired().HasMaxLength(100);

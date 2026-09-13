@@ -39,10 +39,10 @@ public class GetProductsListQueryHandler : IRequestHandler<GetProductsListQuery,
             p.Id,
             p.Name,
             p.Price,
-            p.Images.Select(i => i.Url).FirstOrDefault() ?? string.Empty,
+            p.Images.Select(x => x.Url).ToList(),
             p.Status.ToString(),
             p.Description,
-            p.Tags,
+            p.Tags.ToList(),
             p.Sku,
             p.StockQuantity
         ));

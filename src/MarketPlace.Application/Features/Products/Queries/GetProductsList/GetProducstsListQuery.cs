@@ -13,5 +13,5 @@ public sealed record GetProductsListQuery (
     CategoryId? CategoryId = null,
     VendorId? VendorId = null,
     string? SearchTerm = null,
-    string? ImageUrl = null
+    List<string> ImageUrl = null
 ): IRequest<PaginatedList<ProductsListItemDto>>;

@@ -1,4 +1,5 @@
-using MarketPlace.Domain.Common.Interfaces;
+
+using MarketPlace.Domain.Common.Entities;
 using MarketPlace.Domain.Vendors.ValueObjects;
 
 namespace MarketPlace.Domain.Vendors.Events;

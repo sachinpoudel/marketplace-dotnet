@@ -19,8 +19,8 @@ public sealed class Product : AggregateRoot<ProductId>
 
 
     private readonly List<CategoryId> _categoryIds = new();
-    private readonly List<ReviewsId> _reviewsIds = new();
-
+    private readonly List<ReviewId> _reviewsIds = new();
+   
 
     public string Name { get; private set; } = default!;
     public string Description { get; private set; } = default!;
@@ -28,15 +28,14 @@ public sealed class Product : AggregateRoot<ProductId>
     public int StockQuantity { get; private set; }
     public string Sku { get; private set; } = default!;
     public ICollection<Img> Images { get; private set; } = default!;
-    public string Tags { get; private set; } = default!;
+    public IEnumerable<string> Tags { get; private set; } = default!;
     public ProductStatus Status { get; private set; }
 
 
 
     public ICollection<CategoryId> CategoryIds => _categoryIds;
-    public ICollection<ReviewsId> ReviewsId => _reviewsIds;
+    // public ICollection<ReviewId> ReviewsId => _reviewsIds;
     public VendorId VendorId { get; private set; } = default!;
-
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
@@ -48,7 +47,7 @@ public sealed class Product : AggregateRoot<ProductId>
         int stockQuantity,
         string sku,
         IEnumerable<Img> images,
-        string tags,
+        IEnumerable<string> tags,
       VendorId vendorId
         ) : base(id)
     {
@@ -74,7 +73,7 @@ public sealed class Product : AggregateRoot<ProductId>
         int stockQuantity,
         string sku,
         IEnumerable<Img> images,
-        string tags,
+        IEnumerable<string> tags,
         VendorId vendorId,
     IEnumerable<CategoryId> categoryIds
         )
@@ -106,7 +105,7 @@ public sealed class Product : AggregateRoot<ProductId>
         if (!_categoryIds.Contains(categoryId))
             _categoryIds.Add(categoryId);
     }
-    public void UpdateDetails(string name, string description, decimal price, string tags)
+    public void UpdateDetails(string name, string description, decimal price, IEnumerable<string> tags)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new DomainException("Product name is required.");

@@ -26,11 +26,13 @@ public sealed class Vendor : AggregateRoot<VendorId>
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
-
+    public ICollection<Product> Products { get; private set; } = new List<Product>();
+    public Guid UserId { get; private set; }
 
 
     private Vendor(
      VendorId id,
+     Guid userId,
      string legalName,
      string tradeName,
      string description,
@@ -39,6 +41,7 @@ public sealed class Vendor : AggregateRoot<VendorId>
      string businessAddress,
      string contactEmail) : base(id)
     {
+        UserId = userId;
         LegalName = legalName;
         TradeName = tradeName;
         Description = description;
@@ -51,7 +54,7 @@ public sealed class Vendor : AggregateRoot<VendorId>
     private Vendor() { }
 
     public static Result<Vendor> Create(
-       
+       Guid userId,
       string legalName, string tradeName, string description,
       string profileUrl, string businessAddress, string contactEmail) // status param removed
     {
@@ -61,7 +64,7 @@ public sealed class Vendor : AggregateRoot<VendorId>
         if (contactEmail == null || !contactEmail.Contains("@"))
             return Result<Vendor>.Failure(VendorError.VendorContactEmailIsInvalid());
 
-        var vendor = new Vendor(VendorId.Create(), legalName, tradeName, description,
+        var vendor = new Vendor(VendorId.Create(),userId, legalName, tradeName, description,
             profileUrl, VendorStatus.Pending, businessAddress, contactEmail);
 
         vendor.AddDomainEvent(new VendorRegisteredEvent(vendor.Id));

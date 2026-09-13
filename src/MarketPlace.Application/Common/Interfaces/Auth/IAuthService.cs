@@ -18,7 +18,7 @@ public interface IAuthService
     Task<Result> ForgotPasswordAsync(ForgotPasswordCommandData request, CancellationToken cancellationToken);
 
     Task<Result> ResetPasswordAsync(ResetPasswordCommandData request, CancellationToken cancellationToken);
-    
+     Task<bool> IsUserExists(string UserId, CancellationToken cancellationToken = default);
     //Roles
     
     Task<bool> IsInRoleAsync(string userId, string roleName);

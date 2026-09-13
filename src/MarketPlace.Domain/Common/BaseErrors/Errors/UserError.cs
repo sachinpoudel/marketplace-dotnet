@@ -28,4 +28,12 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.BadRequest("Refresh token revoked or expired.", "The provided refresh token has been revoked or has expired.");
     }
-}
+    public static BaseError UserNotAuthenticated()
+    {
+        return BaseError.BadRequest("User not authenticated.", "The user is not authenticated.");
+    }
+    public static BaseError InvalidUserId()
+    {
+        return BaseError.BadRequest("Invalid user ID.", "The provided user ID is not valid.");
+    }
+} 

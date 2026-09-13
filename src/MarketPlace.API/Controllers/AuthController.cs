@@ -1,6 +1,7 @@
 using MarketPlace.Application.Features.Auth.Command.Login;
 using MarketPlace.Application.Features.Auth.Command.RefreshToken;
 using MarketPlace.Application.Features.Auth.Command.Register;
+using MarketPlace.Domain.Common.ResultPattern;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,9 +22,9 @@ public class AuthController(ILogger<AuthController> _logger, IMediator _mediator
             _logger.LogError("User registration failed");
             return BadRequest(result.Error);
         }
-        return Ok();
+        return Ok(result.Value);
     }
-    
+    [HttpPost("login")]
 public async Task<IActionResult> LoginUser(LoginUserCommand request)
     {
         var result = await _mediator.Send(request);

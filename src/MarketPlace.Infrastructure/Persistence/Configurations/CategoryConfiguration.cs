@@ -22,7 +22,10 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
                 parentId => parentId == null ? null : parentId.Value,
                 value => value.HasValue ? CategoryId.Create(value.Value) : null))
             .IsRequired(false);
-
+            builder.HasOne<Category>()
+                       .WithMany()
+                       .HasForeignKey(c => c.ParentCategoryId)
+                       .OnDelete(DeleteBehavior.Restrict);
         builder.Property(c => c.Name).IsRequired().HasMaxLength(100);
         builder.Property(c => c.Description).HasMaxLength(1000);
         builder.Property(c => c.ImageUrl).HasMaxLength(500);
@@ -31,8 +34,6 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.CreatedAt).IsRequired();
         builder.Property(c => c.UpdatedAt).IsRequired();
 
-        builder.Ignore(c => c.Children);
-        builder.Ignore(c => c.ProductIds);
 
     }
 }

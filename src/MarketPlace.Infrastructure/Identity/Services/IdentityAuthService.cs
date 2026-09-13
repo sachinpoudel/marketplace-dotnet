@@ -9,6 +9,7 @@ using MarketPlace.Infrastructure.Persistence.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 
 namespace MarketPlace.Infrastructure.Identity.Services;
@@ -20,7 +21,8 @@ UserManager<ApplicationUser> _userManager,
 RoleManager<IdentityRole<Guid>> _roleManager,
 JwtTokenService _jwtService,
 ApplicationDbContext _dbContext,
-IHttpContextProvider httpContextProvider
+IHttpContextProvider httpContextProvider,
+ILogger<IdentityAuthService> logger
 
 ) : IAuthService
 {
@@ -35,12 +37,23 @@ IHttpContextProvider httpContextProvider
             LastName = request.LastName
 
         };
+     
         var result = await _userManager.CreateAsync(user, request.Password);
+
         if (!result.Succeeded)
         {
+           
+                var errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
+               
+            
             return Result.Failure<AuthSessionData>(UserError.UserCreationFailed());
         }
         var token = await CreateSessionAsync(user, cancellationToken);
+ if(token is null || string.IsNullOrEmpty(token.AccessToken) || string.IsNullOrEmpty(token.RefreshToken))
+        {
+            return Result.Failure<AuthSessionData>(UserError.UserCreationFailed());
+        }
+        
         await AddToRoleAsync(user.Id, UserRole.Customer);
 
         return new AuthSessionData(
@@ -61,7 +74,7 @@ IHttpContextProvider httpContextProvider
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
         {
-            throw new Exception("Invalid email or password.");
+            return Result.Failure<AuthSessionData>(UserError.InvalidUserCredentials());
         }
 
         var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password);
@@ -188,4 +201,10 @@ IHttpContextProvider httpContextProvider
         var roles = _userManager.GetRolesAsync(user.Result).Result;
         return Task.FromResult(roles.ToList());
     }
+    public Task<bool> IsUserExists(string userId, CancellationToken cancellationToken) {
+         
+        var user = _userManager.FindByIdAsync(userId.ToString());
+        return Task.FromResult(user != null);
+     }
+      
 }

@@ -18,11 +18,7 @@ public static class JwtExtension
     public static IServiceCollection AddJwt(this IServiceCollection services)
     {
 
-        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
-             .AddEntityFrameworkStores<ApplicationDbContext>()
-             .AddApiEndpoints()
-             .AddDefaultTokenProviders();
-
+       
         services.AddAuthentication(options =>
                        {
                            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

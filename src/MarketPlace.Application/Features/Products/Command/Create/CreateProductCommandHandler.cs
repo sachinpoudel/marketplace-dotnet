@@ -39,7 +39,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         _logger = logger;
     }
 
-   public async Task<Result<ProductsListItemDto>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+    public async Task<Result<ProductsListItemDto>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
         // Request already carries strongly-typed value objects
         var categoryIds = request.CategoryIds
@@ -47,7 +47,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             .ToList();
 
         var vendorId = VendorId.Create(request.VendorId);
-        
+
         var validCategoryCount = await _category_repository.CountValidLeafCategoriesAsync(categoryIds, cancellationToken);
         if (validCategoryCount != categoryIds.Count)
             return Result<ProductsListItemDto>.Failure(CategoryError.InvalidOrNonLeafCategories());
@@ -56,9 +56,15 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         if (vendor is null)
             return Result<ProductsListItemDto>.Failure(VendorError.VendorNotFoundOrInactive());
 
-        var images = string.IsNullOrWhiteSpace(request.ImageUrl)
-            ? Enumerable.Empty<Img>()
-            : new List<Img> { Img.Create(request.ImageUrl!) };
+     var images = request.ImageUrl?
+    .Where(url => !string.IsNullOrWhiteSpace(url))
+    .Select(url => Img.Create(url))
+    .ToList() ?? new List<Img>();
+
+var tags = request.Tags?
+    .Where(tag => !string.IsNullOrWhiteSpace(tag))
+    .Select(tag => tag.Trim())
+    .ToList() ?? new List<string>();
 
         var result = Product.Create(
             request.Name,
@@ -67,7 +73,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             request.StockQuantity,
             request.Sku,
             images,
-            request.Tags,
+            tags,
             vendorId,
             categoryIds);
 
@@ -84,10 +90,10 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             product.Id,
             product.Name,
             product.Price,
-            product.Images.FirstOrDefault()?.Url ?? string.Empty,
+            product.Images.Select(i => i.Url).ToList(),
             product.Status.ToString(),
             product.Description,
-            product.Tags,
+            product.Tags.ToList(),
             product.Sku,
             product.StockQuantity
         ));

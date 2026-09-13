@@ -14,4 +14,8 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.InternalServerError("Product creation failed.", "The product could not be created due to an internal error.");
     }
+    public static BaseError ProductNotFound()
+    {
+        return BaseError.NotFound("Product not found.", "The product with the specified ID does not exist.");
+    }
 }

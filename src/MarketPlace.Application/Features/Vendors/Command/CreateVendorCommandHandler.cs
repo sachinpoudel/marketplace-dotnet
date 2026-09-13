@@ -1,4 +1,5 @@
 using MaketPlace.Application.Common.Interfaces.UnitOfWork;
+using MarketPlace.Application.Common.Interfaces.Auth;
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Features.Vendors.Dtos;
 using MarketPlace.Domain.Common.BaseErrors.Errors;
@@ -14,28 +15,48 @@ namespace MarketPlace.Application.Features.Vendors.Command;
 public class CreateVendorCommandHandler(
     IVendorRepository vendorRepository,
     IUnitOfWork unitOfWork,
-    ILogger<CreateVendorCommandHandler> logger
-) : IRequestHandler<CreateVendorCommand, Result<VendorDetailDto>>
+    ILogger<CreateVendorCommandHandler> logger,
+
+
+    ICurrentUser currentUser) : IRequestHandler<CreateVendorCommand, Result<VendorDetailDto>>
 {
-    public async  Task<Result<VendorDetailDto>> Handle(CreateVendorCommand request, CancellationToken cancellationToken)
+    public async Task<Result<VendorDetailDto>> Handle(CreateVendorCommand request, CancellationToken cancellationToken)
     {
         // to create vendor logic in handler we have to
         // 1. validate the request
         // 2. create vendor
         // 3. return vendor detail
-        var vendorExists = await vendorRepository.ExistsAsync(request.LegalName, request.TradeName, request.ContactEmail, cancellationToken);
+        var vendorExists = await vendorRepository.ExistsAsync( request.ContactEmail, cancellationToken);
 
 
-        if(vendorExists)
+        if (vendorExists)
         {
             return Result<VendorDetailDto>.Failure(VendorError.VendorAlreadyExists());
         }
-        var result = Vendor.Create(request.LegalName, request.TradeName, request.Description, request.ProfileUrl ?? string.Empty, request.BusinessAddress, request.ContactEmail);
+
+        var currentUserId = currentUser.UserId;
+        logger.LogInformation("Current User ID: {CurrentUserId}", currentUserId);
+     if (string.IsNullOrWhiteSpace(currentUserId))
+{
+    return Result<VendorDetailDto>.Failure(
+        UserError.UserNotAuthenticated());
+}
+
+if (!Guid.TryParse(currentUserId, out var userId))
+{
+    return Result<VendorDetailDto>.Failure(
+        UserError.InvalidUserId());
+}
+
+
+         logger.LogInformation("usrId", userId) ;
+        
+        var result = Vendor.Create(userId, request.LegalName, request.TradeName, request.Description, request.ProfileUrl ?? string.Empty, request.BusinessAddress, request.ContactEmail);
 
         var vendor = result.Value;
-          
-       var addResult =   await vendorRepository.AddAsync(vendor, cancellationToken);
-        if(addResult is null)
+
+        var addResult = await vendorRepository.AddAsync(vendor, cancellationToken);
+        if (addResult is null)
 
         {
             logger.LogInformation("Failed to create vendor: {Error}", result.Error);

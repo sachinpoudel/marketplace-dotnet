@@ -1,4 +1,6 @@
 using MarketPlace.Application.Common.Interfaces.Repositories;
+using MarketPlace.Application.Features.Products.Dtos;
+using MarketPlace.Application.Features.Reviews.Dtos;
 using MarketPlace.Domain.Products.Entities;
 using MarketPlace.Domain.Products.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -12,23 +14,23 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
     {
         await context.Products.AddAsync(product, cancellationToken);
         return product;
-      
+
 
     }
 
-    public  async Task<bool> ExistsAsync(ProductId productId, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync(ProductId productId, CancellationToken cancellationToken = default)
     {
         return await context.Products.AnyAsync(p => p.Id.Equals(productId), cancellationToken);
-       
+
     }
 
     public async Task<Product?> GetByIdAsync(ProductId productId, CancellationToken cancellationToken = default)
     {
-        return await context.Products.FirstOrDefaultAsync(p => p.Id.Equals(productId), cancellationToken);
+        throw new NotImplementedException();
     }
 
     public IQueryable<Product> Query()
     {
-        return context.Products.AsQueryable(); 
+        return context.Products.AsQueryable();
     }
 }

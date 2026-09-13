@@ -11,7 +11,7 @@ namespace MarketPlace.Application.Features.Products.Command.Create;
 public record CreateProductCommand(string Name, string Description, decimal Price,
 int StockQuantity,
 string Sku,
-string? ImageUrl,
-string Tags,
+ List<string>? ImageUrl,
+    List<string> Tags,
 
  IReadOnlyList<Guid> CategoryIds, Guid VendorId) : IRequest<Result<ProductsListItemDto>>;       

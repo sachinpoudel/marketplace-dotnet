@@ -26,11 +26,10 @@ public sealed class VendorRepository(ApplicationDbContext context) : IVendorRepo
             .FirstOrDefaultAsync(v => v.Id == vendorId && v.Status == VendorStatus.Active, cancellationToken);
     }
 
-    public async Task<bool> ExistsAsync(string legalName, string tradeName, string contactEmail, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync( string contactEmail, CancellationToken cancellationToken = default)
     {
         return await context.Vendors.AnyAsync(v =>
-            v.LegalName == legalName &&
-            v.TradeName == tradeName &&
+          
             v.ContactEmail == contactEmail,
             cancellationToken);
     }

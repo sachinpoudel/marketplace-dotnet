@@ -25,11 +25,23 @@ public class CreateProductValidator : AbstractValidator<CreateProductCommand>
             .NotEmpty().WithMessage("SKU is required.")
             .MaximumLength(50).WithMessage("SKU must not exceed 50 characters.");
 
-        RuleFor(x => x.ImageUrl)
-            .NotEmpty().WithMessage("Image URL is required.")
-            .MaximumLength(200).WithMessage("Image URL must not exceed 200 characters.");
+RuleFor(x => x.Tags)
+    .NotEmpty()
+    .Must(tags => tags.Count <= 10)
+    .WithMessage("A product can have a maximum of 10 tags.");
 
-        RuleFor(x => x.Tags)
-            .MaximumLength(200).WithMessage("Tags must not exceed 200 characters.");
+RuleForEach(x => x.Tags)
+    .NotEmpty()
+    .MaximumLength(50)
+    .WithMessage("Each tag must not exceed 50 characters.");
+
+RuleFor(x => x.ImageUrl)
+    .Must(images => images == null || images.Count <= 10)
+    .WithMessage("A product can have a maximum of 10 images.");
+
+RuleForEach(x => x.ImageUrl)
+    .NotEmpty()
+    .MaximumLength(500)
+    .WithMessage("Each image URL must not exceed 500 characters.");
     }
 }

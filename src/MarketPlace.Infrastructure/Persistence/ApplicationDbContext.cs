@@ -1,5 +1,6 @@
 using MarketPlace.Domain.Categories.Entities;
 using MarketPlace.Domain.Products.Entities;
+using MarketPlace.Domain.Reviews.Entities;
 using MarketPlace.Domain.Vendors.Entities;
 using MarketPlace.Infrastructure.Identity;
 using MarketPlace.Infrastructure.Identity.Models;
@@ -16,6 +17,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
      internal protected DbSet<Vendor> Vendors { get; set; } = null!;
     internal protected DbSet<Category> Categories { get; set; } = null!;
      internal protected DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+     internal protected DbSet<Review> Reviews { get; set; } = null!;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

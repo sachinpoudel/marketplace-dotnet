@@ -1,4 +1,3 @@
-using MarketPlace.Domain.Common.Interfaces;
 
 namespace MarketPlace.Domain.Common.Entities;
 
