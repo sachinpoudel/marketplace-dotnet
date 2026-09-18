@@ -7,7 +7,7 @@ public class Img : ValueObject
 {
     public string Url { get; private set; }
 
-    private Img(string url)
+    public Img(string url)
     {
         Url = url;
     }

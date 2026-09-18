@@ -4,6 +4,7 @@ using MarketPlace.Domain.Categories.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using MarketPlace.Domain.Products.ValueObjects;
 
 namespace MarketPlace.Infrastructure.Persistence.Configurations;
 
@@ -17,15 +18,21 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasConversion(id => id.Value, value => CategoryId.Create(value))
             .ValueGeneratedNever();
 
+        // ProductId property removed entirely — Category doesn't reference Product
+
         builder.Property(c => c.ParentCategoryId)
             .HasConversion(new ValueConverter<CategoryId?, Guid?>(
                 parentId => parentId == null ? null : parentId.Value,
                 value => value.HasValue ? CategoryId.Create(value.Value) : null))
             .IsRequired(false);
-            builder.HasOne<Category>()
-                       .WithMany()
-                       .HasForeignKey(c => c.ParentCategoryId)
-                       .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<Category>()
+            .WithMany()
+            .HasForeignKey(c => c.ParentCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(c => c.ProductId).HasConversion(productId => productId.Value, value => ProductId.Create(value)).IsRequired();
+
         builder.Property(c => c.Name).IsRequired().HasMaxLength(100);
         builder.Property(c => c.Description).HasMaxLength(1000);
         builder.Property(c => c.ImageUrl).HasMaxLength(500);
@@ -33,7 +40,5 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.IsActive).IsRequired();
         builder.Property(c => c.CreatedAt).IsRequired();
         builder.Property(c => c.UpdatedAt).IsRequired();
-
-
     }
 }

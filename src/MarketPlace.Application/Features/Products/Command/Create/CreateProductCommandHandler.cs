@@ -56,15 +56,15 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         if (vendor is null)
             return Result<ProductsListItemDto>.Failure(VendorError.VendorNotFoundOrInactive());
 
-     var images = request.ImageUrl?
-    .Where(url => !string.IsNullOrWhiteSpace(url))
-    .Select(url => Img.Create(url))
-    .ToList() ?? new List<Img>();
+        var images = request.ImageUrl?
+       .Where(url => !string.IsNullOrWhiteSpace(url))
+       .Select(url => Img.Create(url))
+       .ToList() ?? new List<Img>();
 
-var tags = request.Tags?
-    .Where(tag => !string.IsNullOrWhiteSpace(tag))
-    .Select(tag => tag.Trim())
-    .ToList() ?? new List<string>();
+        var tags = request.Tags?
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Select(tag => Tag.Create(tag))
+            .ToList() ?? new List<Tag>(); 
 
         var result = Product.Create(
             request.Name,
@@ -93,7 +93,7 @@ var tags = request.Tags?
             product.Images.Select(i => i.Url).ToList(),
             product.Status.ToString(),
             product.Description,
-            product.Tags.ToList(),
+            product.Tags.Select(t => t.Name).ToList(),
             product.Sku,
             product.StockQuantity
         ));

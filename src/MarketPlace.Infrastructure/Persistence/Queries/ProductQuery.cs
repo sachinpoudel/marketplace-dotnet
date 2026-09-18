@@ -22,7 +22,7 @@ public class ProductQuery(ApplicationDbContext context) : IProductQuery
                         p.StockQuantity,
                         p.Sku,
                         p.Images.Select(i => i.Url).ToList(),
-                        p.Tags.Select(t => t).ToList(),
+                        p.Tags.Select(t => t.Name).ToList(),
                         p.CategoryIds.Select(c => c.Value).ToList(),
                         p.VendorId.Value,
                         context.Reviews 

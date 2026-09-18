@@ -5,6 +5,7 @@ namespace MarketPlace.Domain.Categories.ValueObjects;
 
   public sealed class CategoryId : ValueObject
     {
+        private CategoryId() { } // Required for EF Core
         public Guid Value { get; }
         private CategoryId(Guid value)
         {

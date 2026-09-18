@@ -17,6 +17,7 @@ public class CreateVendorCommandHandler(
     IUnitOfWork unitOfWork,
     ILogger<CreateVendorCommandHandler> logger,
 
+IAuthService authService,
 
     ICurrentUser currentUser) : IRequestHandler<CreateVendorCommand, Result<VendorDetailDto>>
 {
@@ -35,23 +36,21 @@ public class CreateVendorCommandHandler(
         }
 
         var currentUserId = currentUser.UserId;
-        logger.LogInformation("Current User ID: {CurrentUserId}", currentUserId);
-     if (string.IsNullOrWhiteSpace(currentUserId))
-{
-    return Result<VendorDetailDto>.Failure(
-        UserError.UserNotAuthenticated());
-}
 
-if (!Guid.TryParse(currentUserId, out var userId))
-{
-    return Result<VendorDetailDto>.Failure(
-        UserError.InvalidUserId());
-}
+        if (currentUserId == null)
+            return Result<VendorDetailDto>.Failure(UserError.UserNotAuthenticated());
 
 
-         logger.LogInformation("usrId", userId) ;
-        
-        var result = Vendor.Create(userId, request.LegalName, request.TradeName, request.Description, request.ProfileUrl ?? string.Empty, request.BusinessAddress, request.ContactEmail);
+
+        var userExist = await authService.IsUserExists(currentUserId, cancellationToken);
+
+if(!userExist)
+        {
+            return Result<VendorDetailDto>.Failure(UserError.UserNotFound());
+        }
+        var convertedUserId = Guid.Parse(currentUserId);
+ 
+        var result = Vendor.Create(convertedUserId,request.LegalName, request.TradeName, request.Description, request.ProfileUrl ?? string.Empty, request.BusinessAddress, request.ContactEmail);
 
         var vendor = result.Value;
 
@@ -59,7 +58,6 @@ if (!Guid.TryParse(currentUserId, out var userId))
         if (addResult is null)
 
         {
-            logger.LogInformation("Failed to create vendor: {Error}", result.Error);
             return Result<VendorDetailDto>.Failure(result.Error);
         }
         await unitOfWork.CommitAsync(cancellationToken);

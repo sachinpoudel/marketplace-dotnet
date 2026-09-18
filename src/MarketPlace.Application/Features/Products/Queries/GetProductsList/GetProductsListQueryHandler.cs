@@ -42,7 +42,7 @@ public class GetProductsListQueryHandler : IRequestHandler<GetProductsListQuery,
             p.Images.Select(x => x.Url).ToList(),
             p.Status.ToString(),
             p.Description,
-            p.Tags.ToList(),
+            p.Tags.Select(x => x.Name).ToList(),
             p.Sku,
             p.StockQuantity
         ));

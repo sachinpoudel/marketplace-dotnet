@@ -1,4 +1,5 @@
 using MarketPlace.Domain.Categories.Entities;
+using MarketPlace.Domain.Categories.ValueObjects;
 using MarketPlace.Domain.Products.Entities;
 using MarketPlace.Domain.Reviews.Entities;
 using MarketPlace.Domain.Vendors.Entities;
@@ -28,5 +29,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         // Apply all configurations from the current assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+      
     }
 }

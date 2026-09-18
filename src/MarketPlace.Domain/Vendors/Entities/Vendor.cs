@@ -65,7 +65,7 @@ public sealed class Vendor : AggregateRoot<VendorId>
             return Result<Vendor>.Failure(VendorError.VendorContactEmailIsInvalid());
 
         var vendor = new Vendor(VendorId.Create(),userId, legalName, tradeName, description,
-            profileUrl, VendorStatus.Pending, businessAddress, contactEmail);
+            profileUrl, VendorStatus.Active, businessAddress, contactEmail);
 
         vendor.AddDomainEvent(new VendorRegisteredEvent(vendor.Id));
         return Result<Vendor>.Success(vendor);

@@ -16,10 +16,9 @@ public class VendorConfiguration : IEntityTypeConfiguration<Vendor>
             .HasConversion(id => id.Value, value => VendorId.Create(value))
             .ValueGeneratedNever();
 
-        builder.HasMany(x => x.Products)
-            .WithOne()
-            .HasForeignKey(p => p.VendorId)
-            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Ignore(v => v.Products);
+
 
             builder.HasOne<ApplicationUser>().WithMany().HasForeignKey(v => v.UserId).OnDelete(DeleteBehavior.Cascade);
 

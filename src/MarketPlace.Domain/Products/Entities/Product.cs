@@ -18,23 +18,24 @@ public sealed class Product : AggregateRoot<ProductId>
 {
 
 
-    private readonly List<CategoryId> _categoryIds = new();
-    private readonly List<ReviewId> _reviewsIds = new();
-   
+    private  List<CategoryId> _categoryIds = new();
+    private List<Tag> _tags = new();
+
+    private List<Img> _images = new();
 
     public string Name { get; private set; } = default!;
     public string Description { get; private set; } = default!;
     public decimal Price { get; private set; }
     public int StockQuantity { get; private set; }
     public string Sku { get; private set; } = default!;
-    public ICollection<Img> Images { get; private set; } = default!;
-    public IEnumerable<string> Tags { get; private set; } = default!;
     public ProductStatus Status { get; private set; }
 
+    public IReadOnlyCollection<Img> Images => _images.AsReadOnly();
+    public IReadOnlyCollection<Tag> Tags => _tags.AsReadOnly();
+    public IReadOnlyCollection<CategoryId> CategoryIds => _categoryIds.AsReadOnly();
 
 
-    public ICollection<CategoryId> CategoryIds => _categoryIds;
-    // public ICollection<ReviewId> ReviewsId => _reviewsIds;
+
     public VendorId VendorId { get; private set; } = default!;
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
@@ -47,7 +48,8 @@ public sealed class Product : AggregateRoot<ProductId>
         int stockQuantity,
         string sku,
         IEnumerable<Img> images,
-        IEnumerable<string> tags,
+        IEnumerable<Tag> tags,
+        ProductStatus status,
       VendorId vendorId
         ) : base(id)
     {
@@ -56,9 +58,9 @@ public sealed class Product : AggregateRoot<ProductId>
         Price = price;
         StockQuantity = stockQuantity;
         Sku = sku;
-        Images = new List<Img>(images);
-        Tags = tags;
-        Status = ProductStatus.Draft;
+        _images = new List<Img>(images.Select(img => new Img(img.Url)));
+        _tags = new List<Tag>(tags.Select(tag => Tag.Create(tag.Name)));
+        Status = status;
         VendorId = vendorId;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
@@ -73,7 +75,8 @@ public sealed class Product : AggregateRoot<ProductId>
         int stockQuantity,
         string sku,
         IEnumerable<Img> images,
-        IEnumerable<string> tags,
+        IEnumerable<Tag> tags,
+      
         VendorId vendorId,
     IEnumerable<CategoryId> categoryIds
         )
@@ -91,7 +94,7 @@ public sealed class Product : AggregateRoot<ProductId>
 
         var product = new Product(
             ProductId.Create(), name, description, price, stockQuantity,
-            sku, images, tags, vendorId
+             sku, images, tags, ProductStatus.Active, vendorId
             );
         foreach (var categoryId in categoryIds)
         {
@@ -116,13 +119,13 @@ public sealed class Product : AggregateRoot<ProductId>
         Name = name;
         Description = description;
         Price = price;
-        Tags = tags;
+        _tags = new List<Tag>(tags.Select(tag => Tag.Create(tag)));
         UpdatedAt = DateTime.UtcNow;
     }
 
     public void UpdateImages(IEnumerable<Img> images)
     {
-        Images = new List<Img>(images);
+        _images = new List<Img>(images.Select(img => new Img(img.Url)));
         UpdatedAt = DateTime.UtcNow;
     }
 

@@ -9,8 +9,7 @@ namespace MarketPlace.Domain.Categories.Entities;
     
 public class Category : AggregateRoot<CategoryId>
 {
-  // private readonly List<CategoryId> _children = new();
-  //       private readonly List<ProductId> _productIds = new();
+
 
 
     public string Name { get; private set; } = string.Empty;
@@ -20,12 +19,12 @@ public class Category : AggregateRoot<CategoryId>
     public int DisplayOrder { get; private set; } = 0;
     public bool IsActive { get; private set; }
     public CategoryId? ParentCategoryId { get; private set; } 
+    public ProductId? ProductId { get; private set; }
 
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
-     // public IReadOnlyList<CategoryId> Children => _children.AsReadOnly();
-     //    public IReadOnlyList<ProductId> ProductIds => _productIds.AsReadOnly();
+    
 
     private Category() { }
 
