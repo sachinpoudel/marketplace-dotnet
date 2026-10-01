@@ -4,7 +4,7 @@ using MediatR;
 
 namespace MarketPlace.Application.Features.Products.Queries.GetProductById;
 
-public record GetProductByIdQuery(Guid Id) : IRequest<Result<ProductDetailDto>>
+public record GetProductDetailQuery(Guid Id) : IRequest<Result<ProductDetailDto>>
 {
     public Guid Id { get; } = Id;
 }

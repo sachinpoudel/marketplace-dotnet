@@ -59,6 +59,7 @@ public  Category(
             Name = name.Trim(),
             Description = description,
             ParentCategoryId = parentCategoryId,
+            IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

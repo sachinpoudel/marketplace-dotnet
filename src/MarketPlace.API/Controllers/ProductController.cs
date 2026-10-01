@@ -1,6 +1,7 @@
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Features.Products.Command.Create;
 using MarketPlace.Application.Features.Products.Dtos;
+using MarketPlace.Application.Features.Products.Queries.GetProductById;
 using MarketPlace.Application.Features.Products.Queries.GetProductsList;
 using MarketPlace.Domain.Common.ResultPattern;
 using MarketPlace.Domain.Products.Entities;
@@ -19,9 +20,9 @@ public class ProductController(IMediator mediator) : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateProduct( CreateProductCommand request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateProduct(CreateProductCommand request, CancellationToken cancellationToken)
     {
-       
+
 
         var result = await mediator.Send(request, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
@@ -33,6 +34,14 @@ public class ProductController(IMediator mediator) : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetProductDetail([FromRoute] GetProductDetailQuery request, CancellationToken cancellationToken)
+    {
+
+        var result = await mediator.Send(request, cancellationToken);
         return Ok(result);
     }
 }

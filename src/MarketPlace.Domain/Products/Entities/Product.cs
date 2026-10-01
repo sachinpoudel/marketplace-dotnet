@@ -8,7 +8,7 @@ using MarketPlace.Domain.Common.ValueObjects;
 using MarketPlace.Domain.Products.Enums;
 using MarketPlace.Domain.Products.Events;
 using MarketPlace.Domain.Products.ValueObjects;
-using MarketPlace.Domain.Reviews.ValueObjects;
+
 using MarketPlace.Domain.Vendors.ValueObjects;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -108,7 +108,7 @@ public sealed class Product : AggregateRoot<ProductId>
         if (!_categoryIds.Contains(categoryId))
             _categoryIds.Add(categoryId);
     }
-    public void UpdateDetails(string name, string description, decimal price, IEnumerable<string> tags)
+    public void  UpdateDetails(string name, string description, decimal price, int stockQuantity, IEnumerable<string> tags)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new DomainException("Product name is required.");
@@ -119,6 +119,7 @@ public sealed class Product : AggregateRoot<ProductId>
         Name = name;
         Description = description;
         Price = price;
+        StockQuantity = stockQuantity;
         _tags = new List<Tag>(tags.Select(tag => Tag.Create(tag)));
         UpdatedAt = DateTime.UtcNow;
     }

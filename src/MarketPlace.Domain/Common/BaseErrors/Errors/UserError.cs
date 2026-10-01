@@ -36,4 +36,8 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.BadRequest("Invalid user ID.", "The provided user ID is not valid.");
     }
+    public static BaseError UserNotAuthorized()
+    {
+        return BaseError.Forbidden("User not authorized.", "The user does not have the necessary permissions to perform this action.");
+    }
 } 

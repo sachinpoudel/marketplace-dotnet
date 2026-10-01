@@ -12,31 +12,40 @@ public class ProductQuery(ApplicationDbContext context) : IProductQuery
 {
     public async Task<ProductDetailDto?> GetProductDetailAsync(ProductId productId, CancellationToken cancellationToken = default)
     {
-        return await context.Products
-                    .Where(p => p.Id == productId)
-                    .Select(p => new ProductDetailDto(
-                         p.Id.Value,
-                        p.Name,
-                        p.Description,
-                        p.Price,
-                        p.StockQuantity,
-                        p.Sku,
-                        p.Images.Select(i => i.Url).ToList(),
-                        p.Tags.Select(t => t.Name).ToList(),
-                        p.CategoryIds.Select(c => c.Value).ToList(),
-                        p.VendorId.Value,
-                        context.Reviews 
-                            .Where(r => r.ProductId == p.Id)
-                            .Select(r => new ReviewDetailDto(
-                                r.Id.Value,
-                                r.ProductId.Value,
-                                r.UserId,
-                                r.Rating,
-                                r.Content,
-                                r.CreatedAt
-                            )) 
-                            .ToList()
-                    )).FirstOrDefaultAsync(cancellationToken);
-                   
+        var product = await context.Products
+              .AsNoTracking()
+              .FirstOrDefaultAsync(
+                  p => p.Id == productId,
+                  cancellationToken);
+      
+          if (product is null)
+              return null;
+      
+          var reviews = await context.Reviews
+              .AsNoTracking()
+              .Where(r => r.ProductId == product.Id)
+              .Select(r => new ReviewDetailDto(
+                  r.Id.Value,
+                  r.ProductId.Value,
+                  r.UserId,
+                  r.Rating,
+                  r.Content,
+                  r.CreatedAt
+              ))
+              .ToListAsync(cancellationToken);
+      
+          return new ProductDetailDto(
+              product.Id.Value,
+              product.Name,
+              product.Description,
+              product.Price,
+              product.StockQuantity,
+              product.Sku,
+              product.Images.Select(i => i.Url).ToList(),
+              product.Tags.Select(t => t.Name).ToList(),
+              product.CategoryIds.Select(c => c.Value).ToList(),
+              product.VendorId.Value,
+              reviews
+          );                   
     }
 }

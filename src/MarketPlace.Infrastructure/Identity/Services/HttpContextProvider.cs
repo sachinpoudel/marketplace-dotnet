@@ -25,6 +25,6 @@ public class HttpContextProvider : IHttpContextProvider
 
         var ipAddress = context.Connection.RemoteIpAddress?.ToString();
 
-        return ipAddress == "::1" ? "127.0.0.1" : ipAddress;
+        return ipAddress;
     }
 }

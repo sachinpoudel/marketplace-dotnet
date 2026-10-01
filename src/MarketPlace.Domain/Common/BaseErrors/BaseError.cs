@@ -15,4 +15,5 @@ public abstract class BaseError(string title, string message, StatusCode statusC
     public static BaseError InternalServerError(string title, string message) => new GeneralError(title, message, StatusCode.InternalServerError);
     public static BaseError Conflict(string title, string message) => new GeneralError(title, message, StatusCode.Conflict);
     public static BaseError NotFound(string title, string message) => new GeneralError(title, message, StatusCode.NotFound);
+    public static BaseError Forbidden(string title, string message) => new GeneralError(title, message, StatusCode.Forbidden);
 }

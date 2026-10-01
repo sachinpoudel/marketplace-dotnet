@@ -18,6 +18,7 @@ IHttpContextProvider _httpContextProvider
     public async Task<Result<AuthSessionData>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {
         var clientIpAddress = _httpContextProvider.GetCurrentIpAddress();
+        Console.WriteLine($"Client IP Address: {clientIpAddress}");
         var data = new RefreshTokenCommandData(request.RefreshToken, clientIpAddress);
         var result = await _authService.RefreshTokenAsync(data, cancellationToken);
 

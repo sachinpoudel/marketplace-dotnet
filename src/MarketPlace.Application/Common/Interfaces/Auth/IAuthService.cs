@@ -21,7 +21,7 @@ public interface IAuthService
      Task<bool> IsUserExists(string UserId, CancellationToken cancellationToken = default);
     //Roles
     
-    Task<bool> IsInRoleAsync(string userId, string roleName);
+    Task<bool> IsInRoleAsync(string userId, string roleName, CancellationToken cancellationToken = default);
       Task<bool> AddToRoleAsync(Guid userId, string roleName);
       Task<List<string>> GetUserRolesAsync(string userId, CancellationToken cancellationToken);
 }

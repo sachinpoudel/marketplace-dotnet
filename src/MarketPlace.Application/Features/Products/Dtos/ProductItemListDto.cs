@@ -4,7 +4,7 @@ namespace MarketPlace.Application.Features.Products.Dtos;
 
 
 public sealed record ProductsListItemDto (
-ProductId Id,
+Guid Id,
 string Name,
 decimal Price,
 List<string> ImageUrl,

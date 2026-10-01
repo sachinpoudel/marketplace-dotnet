@@ -13,6 +13,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Collections.Generic;
+using MarketPlace.Application.Common.Interfaces.Auth;
 
 namespace MarketPlace.Application.Features.Products.Command.Create;
 
@@ -24,12 +25,14 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
     private readonly IVendorRepository _vendor_repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateProductCommandHandler> _logger;
+    private readonly ICurrentUser _currentUser;
 
     public CreateProductCommandHandler(
         IProductRepository productRepository,
         ICategoryRepository categoryRepository,
         IVendorRepository vendorRepository,
         IUnitOfWork unitOfWork,
+        ICurrentUser currentUser,
         ILogger<CreateProductCommandHandler> logger)
     {
         _productRepository = productRepository;
@@ -37,6 +40,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         _vendor_repository = vendorRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<ProductsListItemDto>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
@@ -45,8 +49,15 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         var categoryIds = request.CategoryIds
             .Select(CategoryId.Create)
             .ToList();
+            
+           var currentVendorId = Guid.Parse(_currentUser.UserId);
+           if(currentVendorId == Guid.Empty)
+           {
+            return Result<ProductsListItemDto>.Failure(UserError.UserNotAuthenticated());
+           }
+           
 
-        var vendorId = VendorId.Create(request.VendorId);
+        var vendorId = VendorId.Create(currentVendorId);
 
         var validCategoryCount = await _category_repository.CountValidLeafCategoriesAsync(categoryIds, cancellationToken);
         if (validCategoryCount != categoryIds.Count)
@@ -87,7 +98,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         _logger.LogInformation("Product created successfully with Id: {ProductId}", product.Id);
 
         return Result<ProductsListItemDto>.Success(new ProductsListItemDto(
-            product.Id,
+            product.Id.Value,
             product.Name,
             product.Price,
             product.Images.Select(i => i.Url).ToList(),

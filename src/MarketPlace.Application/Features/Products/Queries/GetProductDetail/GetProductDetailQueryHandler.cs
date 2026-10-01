@@ -10,15 +10,15 @@ using MediatR;
 
 namespace MarketPlace.Application.Features.Products.Queries.GetProductById;
 
-public class GetProductByIdQueryHandler(
+public class GetProductDetailQueryHandler(
     IProductQuery productQuery
-) : IRequestHandler<GetProductByIdQuery, Result<ProductDetailDto>>
+) : IRequestHandler<GetProductDetailQuery, Result<ProductDetailDto>>
 {
 
 
 
 
-    public async Task<Result<ProductDetailDto>> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<ProductDetailDto>> Handle(GetProductDetailQuery request, CancellationToken cancellationToken)
     {
 
         var productId = ProductId.Create(request.Id);
