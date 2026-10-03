@@ -1,3 +1,4 @@
+using MarketPlace.Domain.Carts.Entities;
 using MarketPlace.Domain.Categories.Entities;
 using MarketPlace.Domain.Categories.ValueObjects;
 using MarketPlace.Domain.Products.Entities;
@@ -19,6 +20,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     internal protected DbSet<Category> Categories { get; set; } = null!;
      internal protected DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
      internal protected DbSet<Review> Reviews { get; set; } = null!;
+     internal protected DbSet<Cart> Carts { get; set; } = null!;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

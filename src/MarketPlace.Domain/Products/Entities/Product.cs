@@ -3,6 +3,7 @@ using MarketPlace.Domain.Categories.ValueObjects;
 using MarketPlace.Domain.Common.BaseErrors.Errors;
 using MarketPlace.Domain.Common.Entities;
 using MarketPlace.Domain.Common.Exceptions;
+using MarketPlace.Domain.Common.Interfaces;
 using MarketPlace.Domain.Common.ResultPattern;
 using MarketPlace.Domain.Common.ValueObjects;
 using MarketPlace.Domain.Products.Enums;
@@ -14,7 +15,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace MarketPlace.Domain.Products.Entities;
 
-public sealed class Product : AggregateRoot<ProductId>
+public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
 {
 
 
@@ -39,6 +40,9 @@ public sealed class Product : AggregateRoot<ProductId>
     public VendorId VendorId { get; private set; } = default!;
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedOnUtc { get; set; }
+   
 
     private Product(
         ProductId id,
@@ -141,6 +145,21 @@ public sealed class Product : AggregateRoot<ProductId>
 
         if (StockQuantity == 0)
             AddDomainEvent(new ProductOutOfStockEvent(Id));
+    }
+
+    public void Delete()
+    {
+        if(IsDeleted)
+            throw new DomainException("Product is already deleted.");
+
+            if(StockQuantity > 0) {
+                throw new DomainException("Cannot delete a product that has stock remaining.");
+            }
+
+            IsDeleted = true;
+            DeletedOnUtc = DateTime.UtcNow;
+
+            AddDomainEvent(new ProductDeletedEvent(Id));
     }
 
     public void Publish()

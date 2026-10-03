@@ -36,7 +36,7 @@ public class GetProductsListQueryHandler : IRequestHandler<GetProductsListQuery,
             query = query.Where(p => p.Name.Contains(request.SearchTerm));
 
         var projected = query.OrderByDescending(p => p.CreatedAt).Select(p => new ProductsListItemDto(
-            p.Id,
+            p.Id.Value,
             p.Name,
             p.Price,
             p.Images.Select(x => x.Url).ToList(),

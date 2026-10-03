@@ -12,7 +12,7 @@ namespace MarketPlace.Application.Features.Products.Command.Update;
 
 
 
-public class UpdateProductCommandHandler(ICurrentUser currentUser,IProductRepository productRepository, IAuthService authService, IUnitOfWork unitOfWork) : IRequestHandler<UpdateProductCommand, Result<UpdatedProductDto>>
+public class UpdateProductCommandHandler(ICurrentUser currentUser, IProductRepository productRepository, IAuthService authService, IUnitOfWork unitOfWork) : IRequestHandler<UpdateProductCommand, Result<UpdatedProductDto>>
 {
     public async Task<Result<UpdatedProductDto>> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
@@ -20,7 +20,7 @@ public class UpdateProductCommandHandler(ICurrentUser currentUser,IProductReposi
 
         if (currentUserId == null)
         {
-            
+
             return Result<UpdatedProductDto>.Failure(UserError.UserNotAuthenticated());
         }
         var userRole = await authService.IsInRoleAsync(currentUserId, "Vendor", cancellationToken);
@@ -30,7 +30,7 @@ public class UpdateProductCommandHandler(ICurrentUser currentUser,IProductReposi
         {
             return Result<UpdatedProductDto>.Failure(UserError.UserNotAuthorized());
         }
-var productId = ProductId.Create(request.ProductId);
+        var productId = ProductId.Create(request.ProductId);
         var product = await productRepository.GetByIdAsync(productId, cancellationToken);
 
         if (product == null)

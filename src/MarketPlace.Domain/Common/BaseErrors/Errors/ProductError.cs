@@ -18,4 +18,8 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.NotFound("Product not found.", "The product with the specified ID does not exist.");
     }
+    public static BaseError ProductAlreadyDeleted()
+    {
+        return BaseError.BadRequest("Product already deleted.", "The product has already been marked as deleted.");
+    }
 }

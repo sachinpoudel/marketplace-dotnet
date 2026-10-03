@@ -44,7 +44,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.StockQuantity).IsRequired();
         builder.Property(p => p.Sku).IsRequired().HasMaxLength(50);
         builder.Property(p => p.Status).IsRequired();
-
+  builder.HasQueryFilter(p => !p.IsDeleted);
         builder.Property(p => p.CreatedAt).IsRequired();
         builder.Property(p => p.UpdatedAt).IsRequired();
 

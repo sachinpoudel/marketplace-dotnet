@@ -33,4 +33,9 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
     {
         return context.Products.AsQueryable();
     }
+
+    public Task Update(Product product, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }

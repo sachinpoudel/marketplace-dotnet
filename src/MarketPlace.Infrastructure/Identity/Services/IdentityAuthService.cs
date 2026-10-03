@@ -169,7 +169,8 @@ ILogger<IdentityAuthService> logger
     }
 
 
-    Task<bool> IAuthService.IsInRoleAsync(string userId, string roleName)
+
+    Task<bool> IAuthService.IsInRoleAsync(string userId, string roleName, CancellationToken cancellationToken)
     {
         var user = _userManager.FindByIdAsync(userId);
         if (user == null)

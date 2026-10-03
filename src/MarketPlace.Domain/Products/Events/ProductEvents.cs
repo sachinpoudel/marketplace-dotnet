@@ -7,3 +7,4 @@ namespace MarketPlace.Domain.Products.Events;
 public sealed record ProductCreatedEvent(ProductId ProductId, VendorId VendorId) : IDomainEvent;
 
 public sealed record ProductOutOfStockEvent(ProductId ProductId) : IDomainEvent;
+public sealed record ProductDeletedEvent(ProductId ProductId) : IDomainEvent;

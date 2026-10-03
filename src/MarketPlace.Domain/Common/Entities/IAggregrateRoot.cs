@@ -1,6 +1,6 @@
 namespace MarketPlace.Domain.Common.Entities;
 
-public interface IHasDomainEvents 
+public interface IAggregateRoot 
 {
     IReadOnlyList<IDomainEvent> DomainEvents { get; }
 
