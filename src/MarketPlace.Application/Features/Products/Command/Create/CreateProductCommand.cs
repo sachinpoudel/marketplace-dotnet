@@ -8,7 +8,7 @@ using MediatR;
 namespace MarketPlace.Application.Features.Products.Command.Create;
 
 
-public record CreateProductCommand(string Name, string Description, decimal Price,
+public record CreateProductCommand(string Name, string Description, double Price,
 int StockQuantity,
 string Sku,
  List<string>? ImageUrl,

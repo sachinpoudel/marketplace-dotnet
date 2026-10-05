@@ -1,6 +1,7 @@
 using System;
 using MarketPlace.Domain.Carts;
 using MarketPlace.Domain.Carts.Entities;
+using MarketPlace.Domain.Products.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace MarketPlace.Infrastructure.Persistence.Configurations;
@@ -14,10 +15,13 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
             .HasConversion(id => id.Value, value => CartItemId.Create(value))
 
             .ValueGeneratedNever();
-            builder.Property(c => c.CartId).HasConversion(cartId => cartId.Value, value => CartId.Create(value)).IsRequired();
 
-        builder.Property(c => c.CartId).IsRequired();
-        builder.Property(c => c.ProductId).IsRequired();
+            
+            builder.Property(c => c.CartId).HasConversion(cartId => cartId.Value, value => CartId.Create(value)).IsRequired();
+            builder.Property(c => c.ProductId).HasConversion(productId => productId.Value, value => ProductId.Create(value)).IsRequired();
+
         builder.Property(c => c.Quantity).IsRequired();
+
+        
     }
 }

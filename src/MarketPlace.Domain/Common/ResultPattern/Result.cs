@@ -35,7 +35,10 @@ public class Result<TValue>
         return new Result<TValue>(error);
     }
 
-
+    public static object Failure(object value)
+    {
+        throw new NotImplementedException();
+    }
 
     public static implicit operator Result<TValue>(TValue value) => Success(value); // this is an implicit operator that allows you to convert a TValue to a Result<TValue> by calling the Success method with the value
 

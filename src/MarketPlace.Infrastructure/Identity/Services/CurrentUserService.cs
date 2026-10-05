@@ -14,16 +14,20 @@ public class CurrentUserService( IHttpContextAccessor httpContextAccessor) : ICu
     public bool IsAuthenticated => httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 
 
-
-    public Guid GetCurrentUserId()
+public Guid GetCurrentUserId()
+{
+    if (IsAuthenticated == false || httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == false)
     {
-        var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
-
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
-        {
-            throw new InvalidOperationException("User is not authenticated or user ID claim is missing.");
-        }
-
-        return userId;
+        throw new InvalidOperationException("User is not authenticated.");
     }
+
+    var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        throw new InvalidOperationException("User ID claim is missing or invalid.");
+    }
+
+    return userId;
+}
 }

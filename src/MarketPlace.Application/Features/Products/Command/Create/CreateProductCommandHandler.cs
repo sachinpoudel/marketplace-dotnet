@@ -49,13 +49,13 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         var categoryIds = request.CategoryIds
             .Select(CategoryId.Create)
             .ToList();
-            
-           var currentVendorId = Guid.Parse(_currentUser.UserId);
-           if(currentVendorId == Guid.Empty)
-           {
+
+        var currentVendorId = Guid.Parse(_currentUser.UserId);
+        if (currentVendorId == Guid.Empty)
+        {
             return Result<ProductsListItemDto>.Failure(UserError.UserNotAuthenticated());
-           }
-           
+        }
+
 
         var vendorId = VendorId.Create(currentVendorId);
 
@@ -75,7 +75,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         var tags = request.Tags?
             .Where(tag => !string.IsNullOrWhiteSpace(tag))
             .Select(tag => Tag.Create(tag))
-            .ToList() ?? new List<Tag>(); 
+            .ToList() ?? new List<Tag>();
 
         var result = Product.Create(
             request.Name,
@@ -93,6 +93,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
 
         var product = result.Value;
         await _productRepository.AddAsync(product, cancellationToken);
+        product.Publish(); // this will trigger domain events if any, and can be handled by event handlers
         await _unitOfWork.CommitAsync(cancellationToken);
 
         _logger.LogInformation("Product created successfully with Id: {ProductId}", product.Id);

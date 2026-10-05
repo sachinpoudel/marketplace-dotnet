@@ -21,7 +21,10 @@ public class ShippingAddress :ValueObject
         State = state;
         PhoneNumber = phoneNumber;
     }
-
+  public static ShippingAddress Create(string fullName, string addressLine1, string addressLine2, string city, string state, string phoneNumber)
+    {
+        return new ShippingAddress(fullName, addressLine1, addressLine2, city, state, phoneNumber);
+    }
     protected override IEnumerable<object?> GetEqualityComponents()
     {
         yield return FullName;

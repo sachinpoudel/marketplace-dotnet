@@ -22,4 +22,12 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.BadRequest("Product already deleted.", "The product has already been marked as deleted.");
     }
+    public static BaseError InsufficientStock()
+    {
+        return BaseError.BadRequest("Insufficient stock.", $"The product with ID  does not have enough stock to fulfill the order.");
+    }
+     public static BaseError ProductUnavailable()
+    {
+        return BaseError.BadRequest("Product Unavailable.", $"The product with ID  does not have enough stock to fulfill the order.");
+    }
 }

@@ -9,11 +9,11 @@ namespace MarketPlace.Domain.Orders.Entities;
 public class OrderItem : Entity<OrderItemId>
 {
   public ProductId ProductId { get; private set; }
+  public OrderId OrderId { get; private set; }
+  public VendorId VendorId { get; private set; }
   public int Quantity { get; private set; }
   public string ProductName { get; private set; } = default!;
   public double Price { get; private set; }
-  public OrderId OrderId { get; private set; }
-  public VendorId VendorId { get; private set; }
   public double SubTotal => Price * Quantity;
 
   private OrderItem() { } // For EF Core

@@ -24,7 +24,7 @@ private Cart(CartId id, Guid userId) : base(id)
 
     public void AddItem(ProductId productId, int quantity)
     {
-    var existingItem = Items.FirstOrDefault(i => i.ProductId == productId.Value);
+    var existingItem = Items.FirstOrDefault(i => i.ProductId.Equals(productId.Value));
 
     if(existingItem != null)
     {
@@ -32,7 +32,7 @@ private Cart(CartId id, Guid userId) : base(id)
         return;
     }
 
-    
-        Items.Add(CartItem.Create(productId.Value, quantity));
+    // If no existing item is found, create a new one
+        Items.Add(CartItem.Create(productId, quantity));
     }
 }

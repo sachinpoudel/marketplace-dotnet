@@ -1,6 +1,7 @@
 using MarketPlace.Domain.Carts.Entities;
 using MarketPlace.Domain.Categories.Entities;
 using MarketPlace.Domain.Categories.ValueObjects;
+using MarketPlace.Domain.Orders.Entities;
 using MarketPlace.Domain.Products.Entities;
 using MarketPlace.Domain.Reviews.Entities;
 using MarketPlace.Domain.Vendors.Entities;
@@ -21,7 +22,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
      internal protected DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
      internal protected DbSet<Review> Reviews { get; set; } = null!;
      internal protected DbSet<Cart> Carts { get; set; } = null!;
-
+internal protected DbSet<Order> Orders { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -24,9 +24,11 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
 
     }
 
-    public async Task<Product?> GetByIdAsync(ProductId productId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Product>> GetByIdsAsync(List<ProductId> productIds, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+       return  await context.Products
+            .Where(p => productIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
     }
 
     public IQueryable<Product> Query()

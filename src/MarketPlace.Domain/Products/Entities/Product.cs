@@ -19,14 +19,14 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
 {
 
 
-    private  List<CategoryId> _categoryIds = new();
+    private List<CategoryId> _categoryIds = new();
     private List<Tag> _tags = new();
 
     private List<Img> _images = new();
 
     public string Name { get; private set; } = default!;
     public string Description { get; private set; } = default!;
-    public decimal Price { get; private set; }
+    public double Price { get; private set; }
     public int StockQuantity { get; private set; }
     public string Sku { get; private set; } = default!;
     public ProductStatus Status { get; private set; }
@@ -42,18 +42,18 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
     public DateTime UpdatedAt { get; private set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedOnUtc { get; set; }
-   
+
 
     private Product(
         ProductId id,
         string name,
         string description,
-        decimal price,
+        double price,
         int stockQuantity,
         string sku,
         IEnumerable<Img> images,
         IEnumerable<Tag> tags,
-        ProductStatus status,
+  
       VendorId vendorId
         ) : base(id)
     {
@@ -64,7 +64,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         Sku = sku;
         _images = new List<Img>(images.Select(img => new Img(img.Url)));
         _tags = new List<Tag>(tags.Select(tag => Tag.Create(tag.Name)));
-        Status = status;
+       
         VendorId = vendorId;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
@@ -75,12 +75,12 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
     public static Result<Product> Create(
         string name,
         string description,
-        decimal price,
+        double price,
         int stockQuantity,
         string sku,
         IEnumerable<Img> images,
         IEnumerable<Tag> tags,
-      
+
         VendorId vendorId,
     IEnumerable<CategoryId> categoryIds
         )
@@ -98,7 +98,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
 
         var product = new Product(
             ProductId.Create(), name, description, price, stockQuantity,
-             sku, images, tags, ProductStatus.Active, vendorId
+             sku, images, tags,  vendorId
             );
         foreach (var categoryId in categoryIds)
         {
@@ -112,7 +112,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         if (!_categoryIds.Contains(categoryId))
             _categoryIds.Add(categoryId);
     }
-    public void  UpdateDetails(string name, string description, decimal price, int stockQuantity, IEnumerable<string> tags)
+    public void UpdateDetails(string name, string description, double price, int stockQuantity, IEnumerable<string> tags)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new DomainException("Product name is required.");
@@ -149,17 +149,18 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
 
     public void Delete()
     {
-        if(IsDeleted)
+        if (IsDeleted)
             throw new DomainException("Product is already deleted.");
 
-            if(StockQuantity > 0) {
-                throw new DomainException("Cannot delete a product that has stock remaining.");
-            }
+        if (StockQuantity > 0)
+        {
+            throw new DomainException("Cannot delete a product that has stock remaining.");
+        }
 
-            IsDeleted = true;
-            DeletedOnUtc = DateTime.UtcNow;
+        IsDeleted = true;
+        DeletedOnUtc = DateTime.UtcNow;
 
-            AddDomainEvent(new ProductDeletedEvent(Id));
+        AddDomainEvent(new ProductDeletedEvent(Id));
     }
 
     public void Publish()

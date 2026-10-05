@@ -20,18 +20,24 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     public IProductRepository ProductRepository { get; }
     public ICategoryRepository CategoryRepository { get; }
     public IVendorRepository VendorRepository { get; }
+    public IOrderRepository OrderRepository { get; }
+    public ICartRepository CartRepository { get; }
 
     public UnitOfWork(
         ApplicationDbContext context,
         IProductRepository productRepository,
         ICategoryRepository categoryRepository,
         IVendorRepository vendorRepository,
+        IOrderRepository orderRepository,
+        ICartRepository cartRepository,     
         IPublisher publisher)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         ProductRepository = productRepository;
         CategoryRepository = categoryRepository;
         VendorRepository = vendorRepository;
+        OrderRepository = orderRepository;
+        CartRepository = cartRepository;
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
     }
 
