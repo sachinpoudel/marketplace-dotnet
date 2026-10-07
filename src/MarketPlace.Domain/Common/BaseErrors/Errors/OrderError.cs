@@ -8,4 +8,8 @@ public static class OrderError
     {
         return BaseError.NotFound("Order Not Found", "The order you are trying to access does not exist.");
     }
+    public static BaseError OrderCancelled()
+    {
+        return BaseError.Conflict("Order Cancelled", "The order you are trying to pay for has been cancelled.");
+    }
 }

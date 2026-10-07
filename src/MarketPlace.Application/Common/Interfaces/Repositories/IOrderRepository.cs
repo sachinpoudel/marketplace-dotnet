@@ -8,4 +8,5 @@ public interface IOrderRepository
 {
   Task<Order> AddAsync(Order order, CancellationToken cancellationToken = default);
   Task<Order?> GetOrderByIdAsync(OrderId orderId, CancellationToken cancellationToken = default);
+   IQueryable<Order> Query();  
 }

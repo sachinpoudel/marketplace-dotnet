@@ -1,6 +1,6 @@
 namespace MarketPlace.Application.Features.Orders.Dtos;
 
-public record class OrderDetailDto
+public record  OrderDetailDto
 (
             Guid Id,
             Guid UserId,
@@ -11,7 +11,7 @@ public record class OrderDetailDto
 
             );
 
-public record class ShippingAddressDto(
+public record  ShippingAddressDto(
     string FullName,
     string AddressLine1,
     string AddressLine2,

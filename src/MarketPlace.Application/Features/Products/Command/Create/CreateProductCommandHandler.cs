@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Linq;
 using MaketPlace.Application.Common.Interfaces.UnitOfWork;
+using MarketPlace.Application.Common.Interfaces.Auth;
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Features.Products.Dtos;
 using MarketPlace.Domain.Categories.ValueObjects;
@@ -11,14 +14,11 @@ using MarketPlace.Domain.Vendors.Enums;
 using MarketPlace.Domain.Vendors.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Collections.Generic;
-using MarketPlace.Application.Common.Interfaces.Auth;
 
 namespace MarketPlace.Application.Features.Products.Command.Create;
 
-
-public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Result<ProductsListItemDto>>
+public class CreateProductCommandHandler
+    : IRequestHandler<CreateProductCommand, Result<ProductsListItemDto>>
 {
     private readonly IProductRepository _productRepository;
     private readonly ICategoryRepository _category_repository;
@@ -33,7 +33,8 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         IVendorRepository vendorRepository,
         IUnitOfWork unitOfWork,
         ICurrentUser currentUser,
-        ILogger<CreateProductCommandHandler> logger)
+        ILogger<CreateProductCommandHandler> logger
+    )
     {
         _productRepository = productRepository;
         _category_repository = categoryRepository;
@@ -43,12 +44,13 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         _currentUser = currentUser;
     }
 
-    public async Task<Result<ProductsListItemDto>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+    public async Task<Result<ProductsListItemDto>> Handle(
+        CreateProductCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // Request already carries strongly-typed value objects
-        var categoryIds = request.CategoryIds
-            .Select(CategoryId.Create)
-            .ToList();
+        var categoryIds = request.CategoryIds.Select(CategoryId.Create).ToList();
 
         var currentVendorId = Guid.Parse(_currentUser.UserId);
         if (currentVendorId == Guid.Empty)
@@ -56,10 +58,12 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             return Result<ProductsListItemDto>.Failure(UserError.UserNotAuthenticated());
         }
 
-
         var vendorId = VendorId.Create(currentVendorId);
 
-        var validCategoryCount = await _category_repository.CountValidLeafCategoriesAsync(categoryIds, cancellationToken);
+        var validCategoryCount = await _category_repository.CountValidLeafCategoriesAsync(
+            categoryIds,
+            cancellationToken
+        );
         if (validCategoryCount != categoryIds.Count)
             return Result<ProductsListItemDto>.Failure(CategoryError.InvalidOrNonLeafCategories());
 
@@ -67,15 +71,19 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         if (vendor is null)
             return Result<ProductsListItemDto>.Failure(VendorError.VendorNotFoundOrInactive());
 
-        var images = request.ImageUrl?
-       .Where(url => !string.IsNullOrWhiteSpace(url))
-       .Select(url => Img.Create(url))
-       .ToList() ?? new List<Img>();
+        var images =
+            request
+                .ImageUrl?.Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(url => Img.Create(url))
+                .ToList()
+            ?? new List<Img>();
 
-        var tags = request.Tags?
-            .Where(tag => !string.IsNullOrWhiteSpace(tag))
-            .Select(tag => Tag.Create(tag))
-            .ToList() ?? new List<Tag>();
+        var tags =
+            request
+                .Tags?.Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(tag => Tag.Create(tag))
+                .ToList()
+            ?? new List<Tag>();
 
         var result = Product.Create(
             request.Name,
@@ -86,7 +94,8 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             images,
             tags,
             vendorId,
-            categoryIds);
+            categoryIds
+        );
 
         if (result.IsFailure)
             return Result<ProductsListItemDto>.Failure(result.Error);
@@ -98,17 +107,18 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
 
         _logger.LogInformation("Product created successfully with Id: {ProductId}", product.Id);
 
-        return Result<ProductsListItemDto>.Success(new ProductsListItemDto(
-            product.Id.Value,
-            product.Name,
-            product.Price,
-            product.Images.Select(i => i.Url).ToList(),
-            product.Status.ToString(),
-            product.Description,
-            product.Tags.Select(t => t.Name).ToList(),
-            product.Sku,
-            product.StockQuantity
-        ));
+        return Result<ProductsListItemDto>.Success(
+            new ProductsListItemDto(
+                product.Id.Value,
+                product.Name,
+                product.Price,
+                product.Images.Select(i => i.Url).ToList(),
+                product.Status.ToString(),
+                product.Description,
+                product.Tags.Select(t => t.Name).ToList(),
+                product.Sku,
+                product.StockQuantity
+            )
+        );
     }
-
 }

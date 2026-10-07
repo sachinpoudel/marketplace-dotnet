@@ -146,6 +146,28 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         if (StockQuantity == 0)
             AddDomainEvent(new ProductOutOfStockEvent(Id));
     }
+    public void ReduceStock(int quantity)
+    {
+        if (quantity <= 0)
+            throw new DomainException("Quantity to reduce must be greater than zero.");
+
+        if (StockQuantity < quantity)
+            throw new DomainException("Not enough stock to reduce by the specified quantity.");
+
+        StockQuantity -= quantity;
+        UpdatedAt = DateTime.UtcNow;
+
+        if (StockQuantity == 0)
+            AddDomainEvent(new ProductOutOfStockEvent(Id));
+    }
+    public void IncreaseStock(int quantity)
+    {
+        if (quantity <= 0)
+            throw new DomainException("Quantity to increase must be greater than zero.");
+
+        StockQuantity += quantity;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
     public void Delete()
     {

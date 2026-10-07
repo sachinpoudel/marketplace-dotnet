@@ -60,15 +60,19 @@ public class CreateOrderCommandHandler(
         foreach (var cartitem in cart.Items)
         {
             var product = products.FirstOrDefault(p => p.Id == cartitem.ProductId);
-            var stock = product?.StockQuantity ?? 0;
-            if (cartitem.Quantity > stock)
+            if(product == null)
             {
-                return Result<OrderDetailDto>.Failure(ProductError.InsufficientStock());
+                return Result<OrderDetailDto>.Failure(ProductError.ProductNotFound());
             }
             var status = product.Status;
             if (status != Domain.Products.Enums.ProductStatus.Available)
             {
                 return Result<OrderDetailDto>.Failure(ProductError.ProductUnavailable());
+            }
+            var stock = product?.StockQuantity ?? 0;
+            if (cartitem.Quantity > stock)
+            {
+                return Result<OrderDetailDto>.Failure(ProductError.InsufficientStock());
             }
 
             order.AddItem(
@@ -78,6 +82,7 @@ public class CreateOrderCommandHandler(
                 product.Price,
                 product.VendorId
             );
+            product.ReduceStock(cartitem.Quantity);
         }
         await orderRepository.AddAsync(order, cancellationToken);
         await cartRepository.ClearCartAsync(cart.Id, cancellationToken);
