@@ -7,10 +7,10 @@ public sealed record ProductsListItemDto (
 Guid Id,
 string Name,
 double Price,
-List<string> ImageUrl,
+IEnumerable<string> ImageUrl,
 string Status,
 string Description,
-List<string> Tags,
+IEnumerable<string> Tags,
 string Sku,
 int StockQuantity
 );

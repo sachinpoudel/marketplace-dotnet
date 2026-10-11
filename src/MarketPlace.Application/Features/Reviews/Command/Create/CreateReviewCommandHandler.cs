@@ -1,4 +1,5 @@
 using MaketPlace.Application.Common.Interfaces.UnitOfWork;
+using MarketPlace.Application.Common.Interfaces.Auth;
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Features.Reviews.Dtos;
 using MarketPlace.Domain.Common.BaseErrors.Errors;
@@ -11,36 +12,46 @@ using Microsoft.Extensions.Logging;
 
 namespace MarketPlace.Application.Features.Reviews.Command.Create;
 
-
-
-public class CreateReviewCommandHandler(IUnitOfWork unitOfWork
-,
-IReviewRepository reviewRepository,
-ILogger<CreateReviewCommandHandler> logger
+public class CreateReviewCommandHandler(
+    IUnitOfWork unitOfWork,
+    IReviewRepository reviewRepository,
+    ILogger<CreateReviewCommandHandler> logger,
+    ICurrentUser currentUser
 ) : IRequestHandler<CreateReviewcommand, Result<ReviewDetailDto>>
 {
-   
-
-    public async Task<Result<ReviewDetailDto>> Handle(CreateReviewcommand request, CancellationToken cancellationToken)
+    public async Task<Result<ReviewDetailDto>> Handle(
+        CreateReviewcommand request,
+        CancellationToken cancellationToken
+    )
     {
         var reviewId = ReviewId.Create();
         var productId = ProductId.Create(request.ProductId);
+        var userId = currentUser.GetCurrentUserId();
 
-        var review = Review.Create(reviewId,request.UserId, request.Content, request.Rating, productId);
+        var review = Review.Create(
+            reviewId,
+            userId,
+            request.Content,
+            request.Rating,
+            productId
+        );
 
-   var reviewResult = await reviewRepository.AddReviewAsync(review);
-if(reviewResult is null )
+        var reviewResult = await reviewRepository.AddReviewAsync(review);
+        if (reviewResult is null)
         {
             return Result<ReviewDetailDto>.Failure(ReviewError.ReviewPublishFailed());
         }
-   await unitOfWork.CommitAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
         logger.LogInformation("Review created successfully.");
 
-
-
-
-        var reviewDetailDto = new ReviewDetailDto(reviewResult.Id.Value, reviewResult.ProductId.Value, reviewResult.UserId, reviewResult.Rating, reviewResult.Content, reviewResult.CreatedAt);
-        
+        var reviewDetailDto = new ReviewDetailDto(
+            reviewResult.Id.Value,
+            reviewResult.ProductId.Value,
+            reviewResult.UserId,
+            reviewResult.Rating,
+            reviewResult.Content,
+            reviewResult.CreatedAt
+        );
 
         return Result<ReviewDetailDto>.Success(reviewDetailDto);
     }

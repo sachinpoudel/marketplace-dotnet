@@ -7,27 +7,44 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MarketPlace.Infrastructure.Persistence.Repositories;
 
-
 public class ProductRepository(ApplicationDbContext context) : IProductRepository
 {
-    public async Task<Product> AddAsync(Product product, CancellationToken cancellationToken = default)
+    public async Task<Product> AddAsync(
+        Product product,
+        CancellationToken cancellationToken = default
+    )
     {
         await context.Products.AddAsync(product, cancellationToken);
         return product;
-
-
     }
 
-    public async Task<bool> ExistsAsync(ProductId productId, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync(
+        ProductId productId,
+        CancellationToken cancellationToken = default
+    )
     {
         return await context.Products.AnyAsync(p => p.Id.Equals(productId), cancellationToken);
-
     }
 
-    public async Task<IEnumerable<Product>> GetByIdsAsync(List<ProductId> productIds, CancellationToken cancellationToken = default)
+    public async Task<Product> GetByIdAsync(
+        ProductId productId,
+        CancellationToken cancellationToken = default
+    )
     {
-       return  await context.Products
-            .Where(p => productIds.Contains(p.Id))
+        var product = await context.Products.FindAsync(
+            new object[] { productId },
+            cancellationToken
+        );
+        return product;
+    }
+
+    public async Task<IEnumerable<Product>> GetByIdsAsync(
+        List<ProductId> productIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await context
+            .Products.Where(p => productIds.Contains(p.Id))
             .ToListAsync(cancellationToken);
     }
 
@@ -36,8 +53,11 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
         return context.Products.AsQueryable();
     }
 
-    public Task Update(Product product, CancellationToken cancellationToken = default)
+    public async Task<Product> UpdateAsync(
+        Product product,
+        CancellationToken cancellationToken = default
+    )
     {
-        throw new NotImplementedException();
+        return context.Products.Update(product).Entity;
     }
 }

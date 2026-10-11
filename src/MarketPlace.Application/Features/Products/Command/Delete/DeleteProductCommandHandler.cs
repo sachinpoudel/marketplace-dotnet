@@ -24,6 +24,7 @@ public class DeleteProductCommandHandle(IUnitOfWork unitOfWork, IProductReposito
         }
       
         product.Delete();
+        await productRepository.UpdateAsync(product, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
         return Result.Success();

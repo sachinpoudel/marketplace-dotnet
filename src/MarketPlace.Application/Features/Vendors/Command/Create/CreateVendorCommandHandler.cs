@@ -8,27 +8,29 @@ using MarketPlace.Domain.Vendors.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace MarketPlace.Application.Features.Vendors.Command;
-
-
+namespace MarketPlace.Application.Features.Vendors.Command.Create;
 
 public class CreateVendorCommandHandler(
     IVendorRepository vendorRepository,
     IUnitOfWork unitOfWork,
     ILogger<CreateVendorCommandHandler> logger,
-
-IAuthService authService,
-
-    ICurrentUser currentUser) : IRequestHandler<CreateVendorCommand, Result<VendorDetailDto>>
+    IAuthService authService,
+    ICurrentUser currentUser
+) : IRequestHandler<CreateVendorCommand, Result<VendorDetailDto>>
 {
-    public async Task<Result<VendorDetailDto>> Handle(CreateVendorCommand request, CancellationToken cancellationToken)
+    public async Task<Result<VendorDetailDto>> Handle(
+        CreateVendorCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // to create vendor logic in handler we have to
         // 1. validate the request
         // 2. create vendor
         // 3. return vendor detail
-        var vendorExists = await vendorRepository.ExistsAsync( request.ContactEmail, cancellationToken);
-
+        var vendorExists = await vendorRepository.ExistsAsync(
+            request.ContactEmail,
+            cancellationToken
+        );
 
         if (vendorExists)
         {
@@ -40,36 +42,43 @@ IAuthService authService,
         if (currentUserId == null)
             return Result<VendorDetailDto>.Failure(UserError.UserNotAuthenticated());
 
-
-
         var userExist = await authService.IsUserExists(currentUserId, cancellationToken);
 
-if(!userExist)
+        if (!userExist)
         {
             return Result<VendorDetailDto>.Failure(UserError.UserNotFound());
         }
         var convertedUserId = Guid.Parse(currentUserId);
- 
-        var result = Vendor.Create(convertedUserId,request.LegalName, request.TradeName, request.Description, request.ProfileUrl ?? string.Empty, request.BusinessAddress, request.ContactEmail);
+
+        var result = Vendor.Create(
+            convertedUserId,
+            request.LegalName,
+            request.TradeName,
+            request.Description,
+            request.ProfileUrl ?? string.Empty,
+            request.BusinessAddress,
+            request.ContactEmail
+        );
 
         var vendor = result.Value;
 
         var addResult = await vendorRepository.AddAsync(vendor, cancellationToken);
         if (addResult is null)
-
         {
             return Result<VendorDetailDto>.Failure(result.Error);
         }
         await unitOfWork.CommitAsync(cancellationToken);
         logger.LogInformation("Vendor created successfully with Id: {VendorId}", result.Value.Id);
-        return Result<VendorDetailDto>.Success(new VendorDetailDto(
-            LegalName: result.Value.LegalName,
-            TradeName: result.Value.TradeName,
-            Description: result.Value.Description,
-            ProfileUrl: result.Value.ProfileUrl,
-            Email: result.Value.ContactEmail,
-            BusinessAddress: result.Value.BusinessAddress
-        ));
-
+        return Result<VendorDetailDto>.Success(
+            new VendorDetailDto(
+                Id: result.Value.Id.Value,
+                LegalName: result.Value.LegalName,
+                TradeName: result.Value.TradeName,
+                Description: result.Value.Description,
+                ProfileUrl: result.Value.ProfileUrl,
+                Email: result.Value.ContactEmail,
+                BusinessAddress: result.Value.BusinessAddress
+            )
+        );
     }
 }

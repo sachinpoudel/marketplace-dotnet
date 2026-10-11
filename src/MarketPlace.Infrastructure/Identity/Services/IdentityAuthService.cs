@@ -7,70 +7,70 @@ using MarketPlace.Infrastructure.Identity.Models;
 using MarketPlace.Infrastructure.Persistence;
 using MarketPlace.Infrastructure.Persistence.Options;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 
 namespace MarketPlace.Infrastructure.Identity.Services;
 
-
 public class IdentityAuthService(
-IOptions<JwtOptions> _jwtOptions,
-UserManager<ApplicationUser> _userManager,
-RoleManager<IdentityRole<Guid>> _roleManager,
-JwtTokenService _jwtService,
-ApplicationDbContext _dbContext,
-IHttpContextProvider httpContextProvider,
-ILogger<IdentityAuthService> logger
-
+    IOptions<JwtOptions> _jwtOptions,
+    UserManager<ApplicationUser> _userManager,
+    RoleManager<IdentityRole<Guid>> _roleManager,
+    JwtTokenService _jwtService,
+    ApplicationDbContext _dbContext,
+    IHttpContextProvider httpContextProvider,
+    ILogger<IdentityAuthService> logger
 ) : IAuthService
 {
-    public async Task<Result<AuthSessionData>> RegisterUser(RegisterUserCommandData request, CancellationToken cancellationToken)
+    public async Task<Result<AuthSessionData>> RegisterUser(
+        RegisterUserCommandData request,
+        CancellationToken cancellationToken
+    )
     {
         var user = new ApplicationUser
         {
-
             UserName = request.Email,
             Email = request.Email,
             FirstName = request.FirstName,
-            LastName = request.LastName
-
+            LastName = request.LastName,
         };
-     
+
         var result = await _userManager.CreateAsync(user, request.Password);
 
         if (!result.Succeeded)
         {
-           
-                var errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
-               
-            
+            var errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
+
             return Result.Failure<AuthSessionData>(UserError.UserCreationFailed());
         }
         var token = await CreateSessionAsync(user, cancellationToken);
- if(token is null || string.IsNullOrEmpty(token.AccessToken) || string.IsNullOrEmpty(token.RefreshToken))
+        if (
+            token is null
+            || string.IsNullOrEmpty(token.AccessToken)
+            || string.IsNullOrEmpty(token.RefreshToken)
+        )
         {
             return Result.Failure<AuthSessionData>(UserError.UserCreationFailed());
         }
-        
+
         await AddToRoleAsync(user.Id, UserRole.Customer);
 
         return new AuthSessionData(
-
-             user.Id,
-             user.Email!,
-             token.AccessToken,
-             token.AccessTokenExpiresAtUtc,
-             token.RefreshToken,
-             token.RefreshTokenExpiresAtUtc
-         );
-
+            user.Id,
+            user.Email!,
+            token.AccessToken,
+            token.AccessTokenExpiresAtUtc,
+            token.RefreshToken,
+            token.RefreshTokenExpiresAtUtc
+        );
     }
 
-    public async Task<Result<AuthSessionData>> LoginAsync(LoginUserCommandData request, CancellationToken cancellationToken)
+    public async Task<Result<AuthSessionData>> LoginAsync(
+        LoginUserCommandData request,
+        CancellationToken cancellationToken
+    )
     {
-
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
         {
@@ -93,21 +93,22 @@ ILogger<IdentityAuthService> logger
             token.RefreshToken,
             token.RefreshTokenExpiresAtUtc
         );
-
-
-
     }
 
-    public async Task<Result<AuthSessionData>> RefreshTokenAsync(RefreshTokenCommandData request, CancellationToken cancellationToken)
+    public async Task<Result<AuthSessionData>> RefreshTokenAsync(
+        RefreshTokenCommandData request,
+        CancellationToken cancellationToken
+    )
     {
         var tokenHash = _jwtService.HashToken(request.RefreshToken);
-        var refreshToken = await _dbContext.RefreshTokens
-            .FirstOrDefaultAsync(token => token.Token == tokenHash, cancellationToken);
+        var refreshToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(
+            token => token.Token == tokenHash,
+            cancellationToken
+        );
 
         if (refreshToken == null)
         {
             return Result.Failure<AuthSessionData>(UserError.InvalidRefreshToken());
-
         }
 
         if (!refreshToken.IsActive)
@@ -127,10 +128,16 @@ ILogger<IdentityAuthService> logger
         var expiresAtUtc = DateTime.UtcNow.AddDays(_jwtOptions.Value.RefreshTokenDays);
 
         refreshToken.Rotate(refreshToken, newRefreshTokenHash, expiresAtUtc, request.IpAddress);
-        _dbContext.RefreshTokens.Add(RefreshToken.Create(user.Id, newRefreshTokenHash, request.IpAddress, expiresAtUtc));
+        _dbContext.RefreshTokens.Add(
+            RefreshToken.Create(user.Id, newRefreshTokenHash, request.IpAddress, expiresAtUtc)
+        );
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var accessToken = _jwtService.CreateAccessToken(user, roles, DateTimeOffset.UtcNow.AddMinutes(_jwtOptions.Value.AccessTokenMinutes));
+        var accessToken = _jwtService.CreateAccessToken(
+            user,
+            roles,
+            DateTimeOffset.UtcNow.AddMinutes(_jwtOptions.Value.AccessTokenMinutes)
+        );
 
         return new AuthSessionData(
             user.Id,
@@ -138,17 +145,23 @@ ILogger<IdentityAuthService> logger
             accessToken,
             DateTimeOffset.UtcNow.AddMinutes(_jwtOptions.Value.AccessTokenMinutes),
             newRefreshToken,
-            expiresAtUtc);
+            expiresAtUtc
+        );
     }
 
-    private async Task<AuthSessionData> CreateSessionAsync(ApplicationUser user, CancellationToken cancellationToken)
+    private async Task<AuthSessionData> CreateSessionAsync(
+        ApplicationUser user,
+        CancellationToken cancellationToken
+    )
     {
         var roles = await _userManager.GetRolesAsync(user);
         var refreshToken = _jwtService.CreateRefreshToken();
         var refreshTokenExpiresAtUtc = DateTime.UtcNow.AddDays(_jwtOptions.Value.RefreshTokenDays);
         var refreshTokenHash = _jwtService.HashToken(refreshToken);
         var ipAddress = httpContextProvider.GetCurrentIpAddress() ?? "Unknown";
-        _dbContext.RefreshTokens.Add(RefreshToken.Create(user.Id, refreshTokenHash, ipAddress, refreshTokenExpiresAtUtc));
+        _dbContext.RefreshTokens.Add(
+            RefreshToken.Create(user.Id, refreshTokenHash, ipAddress, refreshTokenExpiresAtUtc)
+        );
         await _dbContext.SaveChangesAsync(cancellationToken);
         return _jwtService.CreateSession(user, roles, refreshToken);
     }
@@ -158,19 +171,27 @@ ILogger<IdentityAuthService> logger
         throw new NotImplementedException();
     }
 
-    public Task<Result> ForgotPasswordAsync(ForgotPasswordCommandData request, CancellationToken cancellationToken)
+    public Task<Result> ForgotPasswordAsync(
+        ForgotPasswordCommandData request,
+        CancellationToken cancellationToken
+    )
     {
         throw new NotImplementedException();
     }
 
-    public Task<Result> ResetPasswordAsync(ResetPasswordCommandData request, CancellationToken cancellationToken)
+    public Task<Result> ResetPasswordAsync(
+        ResetPasswordCommandData request,
+        CancellationToken cancellationToken
+    )
     {
         throw new NotImplementedException();
     }
 
-
-
-    Task<bool> IAuthService.IsInRoleAsync(string userId, string roleName, CancellationToken cancellationToken)
+    Task<bool> IAuthService.IsInRoleAsync(
+        string userId,
+        string roleName,
+        CancellationToken cancellationToken
+    )
     {
         var user = _userManager.FindByIdAsync(userId);
         if (user == null)
@@ -184,14 +205,17 @@ ILogger<IdentityAuthService> logger
     public async Task<bool> AddToRoleAsync(Guid userId, string roleName)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null) return false;
+        if (user == null)
+            return false;
 
         var result = await _userManager.AddToRoleAsync(user, roleName);
         return result.Succeeded;
-
     }
 
-    Task<List<string>> IAuthService.GetUserRolesAsync(string userId, CancellationToken cancellationToken)
+    Task<List<string>> IAuthService.GetUserRolesAsync(
+        string userId,
+        CancellationToken cancellationToken
+    )
     {
         var user = _userManager.FindByIdAsync(userId);
         if (user == null)
@@ -202,10 +226,10 @@ ILogger<IdentityAuthService> logger
         var roles = _userManager.GetRolesAsync(user.Result).Result;
         return Task.FromResult(roles.ToList());
     }
-    public Task<bool> IsUserExists(string userId, CancellationToken cancellationToken) {
-         
+
+    public Task<bool> IsUserExists(string userId, CancellationToken cancellationToken)
+    {
         var user = _userManager.FindByIdAsync(userId.ToString());
         return Task.FromResult(user != null);
-     }
-      
+    }
 }

@@ -27,6 +27,11 @@ public class ReviewRepository(ApplicationDbContext context) : IReviewRepository
         throw new NotImplementedException();
     }
 
+    public Task<Review?> GetReviewByIdAsync(ReviewId id, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<IEnumerable<Review>> GetReviewsByProductIdAsync(ProductId productId)
     {
         throw new NotImplementedException();

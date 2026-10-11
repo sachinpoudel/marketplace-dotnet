@@ -39,7 +39,7 @@ public class UpdateProductCommandHandler(ICurrentUser currentUser, IProductRepos
         }
 
         product.UpdateDetails(request.Name, request.Description, request.Price, request.StockQuantity, request.Tags);
-        await productRepository.Update(product);
+        await productRepository.UpdateAsync(product, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
         return Result<UpdatedProductDto>.Success(new UpdatedProductDto(product.Id.Value, product.Name, product.Description, product.Price, product.StockQuantity, product.Tags.Select(t => t.Name).ToList()));
     }

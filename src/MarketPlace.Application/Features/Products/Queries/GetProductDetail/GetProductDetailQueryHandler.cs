@@ -10,17 +10,14 @@ using MediatR;
 
 namespace MarketPlace.Application.Features.Products.Queries.GetProductById;
 
-public class GetProductDetailQueryHandler(
-    IProductQuery productQuery
-) : IRequestHandler<GetProductDetailQuery, Result<ProductDetailDto>>
+public class GetProductDetailQueryHandler(IProductQuery productQuery)
+    : IRequestHandler<GetProductDetailQuery, Result<ProductDetailDto>>
 {
-
-
-
-
-    public async Task<Result<ProductDetailDto>> Handle(GetProductDetailQuery request, CancellationToken cancellationToken)
+    public async Task<Result<ProductDetailDto>> Handle(
+        GetProductDetailQuery request,
+        CancellationToken cancellationToken
+    )
     {
-
         var productId = ProductId.Create(request.Id);
 
         var product = await productQuery.GetProductDetailAsync(productId, cancellationToken);
@@ -30,21 +27,20 @@ public class GetProductDetailQueryHandler(
             return Result<ProductDetailDto>.Failure(ProductError.ProductNotFound());
         }
 
-        return Result<ProductDetailDto>.Success(new ProductDetailDto
-        (
-             product.Id,
-             product.Name,
-            product.Description,
-             product.Price,
-            product.StockQuantity,
-             product.Sku,
-       product.ImageUrl.Select(i => i).ToList(),
-             product.Tags.Select(t => t).ToList(),
-            product.CategoryIds.Select(c => c).ToList(),
-            product.VendorId,
-            product.Reviews
-
-
-        ));
+        return Result<ProductDetailDto>.Success(
+            new ProductDetailDto(
+                product.Id,
+                product.Name,
+                product.Description,
+                product.Price,
+                product.StockQuantity,
+                product.Sku,
+                product.ImageUrl.Select(i => i).ToList(),
+                product.Tags.Select(t => t).ToList(),
+                product.CategoryIds.Select(c => c).ToList(),
+                product.VendorId,
+                product.Reviews
+            )
+        );
     }
 }

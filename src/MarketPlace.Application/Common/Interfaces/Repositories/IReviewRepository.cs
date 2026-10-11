@@ -7,9 +7,8 @@ namespace MarketPlace.Application.Common.Interfaces.Repositories;
 
 public interface IReviewRepository
 {
-    Task<Review?> GetReviewByIdAsync(ReviewId id);
+    Task<Review?> GetReviewByIdAsync(ReviewId id, CancellationToken cancellationToken);
     Task<IEnumerable<Review>> GetReviewsByProductIdAsync(ProductId productId);
     Task<Review> AddReviewAsync(Review review);
     Task UpdateReviewAsync(Review review);
-    Task DeleteReviewAsync(Review review);
 }

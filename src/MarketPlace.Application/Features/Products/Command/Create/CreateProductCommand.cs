@@ -7,11 +7,14 @@ using MediatR;
 
 namespace MarketPlace.Application.Features.Products.Command.Create;
 
-
-public record CreateProductCommand(string Name, string Description, double Price,
-int StockQuantity,
-string Sku,
- List<string>? ImageUrl,
+public record CreateProductCommand(
+    string Name,
+    string Description,
+    double Price,
+    int StockQuantity,
+    string Sku,
+    List<string>? ImageUrl,
     List<string> Tags,
-
- IReadOnlyList<Guid> CategoryIds, Guid VendorId) : IRequest<Result<ProductsListItemDto>>;       
+    IReadOnlyList<Guid> CategoryIds,
+    Guid VendorId
+) : IRequest<Result<ProductsListItemDto>>;

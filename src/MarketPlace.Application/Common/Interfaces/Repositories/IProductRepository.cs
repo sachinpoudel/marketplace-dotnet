@@ -11,7 +11,7 @@ public interface IProductRepository
     Task<IEnumerable<Product>> GetByIdsAsync(List<ProductId> productIds, CancellationToken cancellationToken = default);
     Task<Product> AddAsync(Product product, CancellationToken cancellationToken = default);
   Task<bool> ExistsAsync(ProductId productId, CancellationToken cancellationToken = default);
-  Task Update(Product product, CancellationToken cancellationToken = default);
+  Task<Product> UpdateAsync(Product product, CancellationToken cancellationToken = default);
     Task<Product> GetByIdAsync(ProductId productId, CancellationToken cancellationToken = default);
     IQueryable<Product> Query();   
 }

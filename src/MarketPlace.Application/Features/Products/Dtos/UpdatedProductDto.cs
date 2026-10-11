@@ -7,6 +7,6 @@ public record UpdatedProductDto(
     Guid Id,
     string Name,
     string Description,
-    decimal Price,
+    double Price,
     int StockQuantity,
     IEnumerable<string> Tags);

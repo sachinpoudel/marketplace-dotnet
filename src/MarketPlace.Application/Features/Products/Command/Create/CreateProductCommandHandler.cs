@@ -50,7 +50,7 @@ public class CreateProductCommandHandler
     )
     {
         // Request already carries strongly-typed value objects
-        var categoryIds = request.CategoryIds.Select(CategoryId.Create).ToList();
+        var categoryIds = request.CategoryIds.Select(CategoryId.Create).ToList(); //gets the category ids from the request and converts them to CategoryId value objects
 
         var currentVendorId = Guid.Parse(_currentUser.UserId);
         if (currentVendorId == Guid.Empty)

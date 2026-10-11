@@ -34,5 +34,7 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
         builder.Property(r => r.Content).IsRequired().HasMaxLength(1000);
         builder.Property(r => r.Rating).IsRequired();
         builder.Property(r => r.CreatedAt).IsRequired();
+        builder.Property(r => r.UpdatedAt).IsRequired(false);
+        builder.HasQueryFilter(r => !r.IsDeleted);
     }
 }

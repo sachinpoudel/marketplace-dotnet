@@ -14,9 +14,17 @@ using MediatR;
 
 namespace MarketPlace.Application.Features.Carts.Commands.AddItem;
 
-public class AddCartItemCommandHandler(ICartRepository cartRepository, IUnitOfWork unitOfWork,IProductRepository productRepository, ICurrentUser currentUser) : IRequestHandler<AddCartItemCommand, Result<CartDetailDto>>
+public class AddCartItemCommandHandler(
+    ICartRepository cartRepository,
+    IUnitOfWork unitOfWork,
+    IProductRepository productRepository,
+    ICurrentUser currentUser
+) : IRequestHandler<AddCartItemCommand, Result<CartDetailDto>>
 {
-    public async Task<Result<CartDetailDto>> Handle(AddCartItemCommand request, CancellationToken cancellationToken)
+    public async Task<Result<CartDetailDto>> Handle(
+        AddCartItemCommand request,
+        CancellationToken cancellationToken
+    )
     {
         var isValidQuantity = request.Quantity > 0 && request.Quantity <= 100;
         if (!isValidQuantity)
@@ -33,29 +41,39 @@ public class AddCartItemCommandHandler(ICartRepository cartRepository, IUnitOfWo
         var userId = Guid.Parse(currentUser.UserId);
 
         var cartByUserId = await cartRepository.GetCartByUserIdAsync(userId, cancellationToken);
-        
- if(cartByUserId is null)
+
+        if (cartByUserId is null)
         {
-            
-        var cart = Cart.Create(userId);
-        cart.AddItem(productId, request.Quantity);
-        await cartRepository.AddItemToCartAsync(cart, cancellationToken);
-        }else
+            var cart = Cart.Create(userId);
+            cart.AddItem(productId, request.Quantity);
+            await cartRepository.AddItemToCartAsync(cart, cancellationToken);
+        }
+        else
         {
             cartByUserId.AddItem(productId, request.Quantity);
         }
 
-        await unitOfWork.CommitAsync(cancellationToken);   
-        
-        var quantity = cartByUserId.Items.FirstOrDefault(i => i.ProductId.Equals(productId))?.Quantity ?? 0;
-        return Result<CartDetailDto>.Success(new CartDetailDto(
-            cartByUserId.Id.Value,
-            cartByUserId.UserId,
-            cartByUserId.Items.Select(i => $"{i.ProductId} - {i.Quantity}").ToList(),
-            quantity
+        await unitOfWork.CommitAsync(cancellationToken);
+        var totalPrice = cartByUserId?.CalculateTotalPrice() ?? 0;
+        var quantity =
+            cartByUserId?.Items.FirstOrDefault(i => i.ProductId.Equals(productId.Value))?.Quantity
+            ?? 0;
 
-        ));
+        return Result<CartDetailDto>.Success(
+            new CartDetailDto(
+                cartByUserId.Id.Value,
+                cartByUserId.UserId,
+                cartByUserId
+                    .Items.Select(i => new CartItemDto(
+                        i.ProductId.Value,
+                        i.Quantity,
+                        cartByUserId.Id.Value,
+                        i.PriceAtTheTimeOfAdding
+                    ))
+                    .ToList(),
+                quantity,
+                totalPrice
+            )
+        );
     }
-
-
 }

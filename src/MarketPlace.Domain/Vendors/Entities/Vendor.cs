@@ -1,5 +1,6 @@
 using MarketPlace.Domain.Common.BaseErrors.Errors;
 using MarketPlace.Domain.Common.Entities;
+using MarketPlace.Domain.Common.Exceptions;
 using MarketPlace.Domain.Common.ResultPattern;
 using MarketPlace.Domain.Products.Entities;
 using MarketPlace.Domain.Products.ValueObjects;
@@ -9,7 +10,6 @@ using MarketPlace.Domain.Vendors.ValueObjects;
 
 namespace MarketPlace.Domain.Vendors.Entities;
 
-
 public sealed class Vendor : AggregateRoot<VendorId>
 {
     public string LegalName { get; private set; } = string.Empty;
@@ -17,7 +17,7 @@ public sealed class Vendor : AggregateRoot<VendorId>
     public string Description { get; private set; } = string.Empty;
     public string? ProfileUrl { get; private set; } = string.Empty;
 
-
+    public bool IsDeleted { get; private set; }
     public VendorStatus Status { get; private set; } = VendorStatus.Inactive;
 
     public string BusinessAddress { get; private set; } = string.Empty;
@@ -29,17 +29,18 @@ public sealed class Vendor : AggregateRoot<VendorId>
     public ICollection<Product> Products { get; private set; } = new List<Product>();
     public Guid UserId { get; private set; }
 
-
     private Vendor(
-     VendorId id,
-     Guid userId,
-     string legalName,
-     string tradeName,
-     string description,
-     string profileUrl,
-     VendorStatus status,
-     string businessAddress,
-     string contactEmail) : base(id)
+        VendorId id,
+        Guid userId,
+        string legalName,
+        string tradeName,
+        string description,
+        string profileUrl,
+        VendorStatus status,
+        string businessAddress,
+        string contactEmail
+    )
+        : base(id)
     {
         UserId = userId;
         LegalName = legalName;
@@ -54,9 +55,14 @@ public sealed class Vendor : AggregateRoot<VendorId>
     private Vendor() { }
 
     public static Result<Vendor> Create(
-       Guid userId,
-      string legalName, string tradeName, string description,
-      string profileUrl, string businessAddress, string contactEmail) // status param removed
+        Guid userId,
+        string legalName,
+        string tradeName,
+        string description,
+        string profileUrl,
+        string businessAddress,
+        string contactEmail
+    ) // status param removed
     {
         if (string.IsNullOrWhiteSpace(legalName) && string.IsNullOrWhiteSpace(tradeName))
             return Result<Vendor>.Failure(VendorError.VendorNameIsRequired());
@@ -64,28 +70,38 @@ public sealed class Vendor : AggregateRoot<VendorId>
         if (contactEmail == null || !contactEmail.Contains("@"))
             return Result<Vendor>.Failure(VendorError.VendorContactEmailIsInvalid());
 
-        var vendor = new Vendor(VendorId.Create(),userId, legalName, tradeName, description,
-            profileUrl, VendorStatus.Active, businessAddress, contactEmail);
+        var vendor = new Vendor(
+            VendorId.Create(),
+            userId,
+            legalName,
+            tradeName,
+            description,
+            profileUrl,
+            VendorStatus.Active,
+            businessAddress,
+            contactEmail
+        );
 
         vendor.AddDomainEvent(new VendorRegisteredEvent(vendor.Id));
         return Result<Vendor>.Success(vendor);
     }
 
-
-
     public Result UpdateProfile(string profileUrl)
     {
         if (string.IsNullOrWhiteSpace(profileUrl))
-            return  Result.Failure(VendorError.VendorProfileUrlIsInvalid());
+            return Result.Failure(VendorError.VendorProfileUrlIsInvalid());
 
         ProfileUrl = profileUrl;
         UpdatedAt = DateTime.UtcNow;
         return Result.Success();
     }
 
-
-
-    public Result UpdateDetails(string legalName, string tradeName, string description, string businessAddress)
+    public Result UpdateDetails(
+        string legalName,
+        string tradeName,
+        string description,
+        string businessAddress
+    )
     {
         if (string.IsNullOrWhiteSpace(legalName) && string.IsNullOrWhiteSpace(tradeName))
         {
@@ -111,7 +127,19 @@ public sealed class Vendor : AggregateRoot<VendorId>
         UpdatedAt = DateTime.UtcNow;
         return Result.Success();
     }
-            
+
+    public void Delete()
+    {
+        if (Status == VendorStatus.Deleted)
+        {
+            throw new DomainException("Vendor is already deleted.");
+        }
+
+        Status = VendorStatus.Deleted;
+        IsDeleted = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public Result Delist()
     {
         Status = VendorStatus.Inactive;

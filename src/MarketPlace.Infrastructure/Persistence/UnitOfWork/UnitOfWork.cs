@@ -22,6 +22,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     public IVendorRepository VendorRepository { get; }
     public IOrderRepository OrderRepository { get; }
     public ICartRepository CartRepository { get; }
+    public IPaymentRepository PaymentRepository { get; }
 
     public UnitOfWork(
         ApplicationDbContext context,
@@ -29,8 +30,10 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         ICategoryRepository categoryRepository,
         IVendorRepository vendorRepository,
         IOrderRepository orderRepository,
-        ICartRepository cartRepository,     
-        IPublisher publisher)
+        ICartRepository cartRepository,
+        IPaymentRepository paymentRepository,
+        IPublisher publisher
+    )
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         ProductRepository = productRepository;
@@ -38,49 +41,54 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         VendorRepository = vendorRepository;
         OrderRepository = orderRepository;
         CartRepository = cartRepository;
+        PaymentRepository = paymentRepository;
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
     }
 
     public async Task CommitAsync(CancellationToken cancellationToken = default)
-      {
-          try
-          {
-              var domainEvents = _context.ChangeTracker
-                  .Entries<IAggregateRoot>()
-                  .Select(e => e.Entity)
-                  .SelectMany(e => e.DomainEvents)
-                  .ToList();
-  
-              foreach (var aggregate in _context.ChangeTracker.Entries<IAggregateRoot>().Select(e => e.Entity))
-              {
-                  aggregate.ClearDomainEvents();
-              }
-  
-              if (_currentTransaction != null)
-              {
-                  await _context.SaveChangesAsync(cancellationToken);
-                  await _currentTransaction.CommitAsync(cancellationToken);
-              }
-              else
-              {
-                  await _context.SaveChangesAsync(cancellationToken);
-              }
-  
-              foreach (var domainEvent in domainEvents)
-              {
-                  await _publisher.Publish(domainEvent, cancellationToken);
-              }
-          }
-          catch
-          {
-              await RollbackAsync(cancellationToken);
-              throw;
-          }
-          finally
-          {
-              await DisposeTransactionAsync();
-          }
-      }
+    {
+        try
+        {
+            var domainEvents = _context
+                .ChangeTracker.Entries<IAggregateRoot>()
+                .Select(e => e.Entity)
+                .SelectMany(e => e.DomainEvents)
+                .ToList();
+
+            foreach (
+                var aggregate in _context
+                    .ChangeTracker.Entries<IAggregateRoot>()
+                    .Select(e => e.Entity)
+            )
+            {
+                aggregate.ClearDomainEvents();
+            }
+
+            if (_currentTransaction != null)
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+                await _currentTransaction.CommitAsync(cancellationToken);
+            }
+            else
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            foreach (var domainEvent in domainEvents)
+            {
+                await _publisher.Publish(domainEvent, cancellationToken);
+            }
+        }
+        catch
+        {
+            await RollbackAsync(cancellationToken);
+            throw;
+        }
+        finally
+        {
+            await DisposeTransactionAsync();
+        }
+    }
 
     public async Task RollbackAsync(CancellationToken cancellationToken = default)
     {
@@ -123,11 +131,4 @@ public class UnitOfWork : IUnitOfWork, IDisposable
             _disposed = true;
         }
     }
-
-
-
-
-
-
-    
 }

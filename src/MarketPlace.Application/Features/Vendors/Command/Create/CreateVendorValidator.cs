@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace MarketPlace.Application.Features.Vendors.Command;
+namespace MarketPlace.Application.Features.Vendors.Command.Create;
 
 
 public class CreateVendorValidator : AbstractValidator<CreateVendorCommand>

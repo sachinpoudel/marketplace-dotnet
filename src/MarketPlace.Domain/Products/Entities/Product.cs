@@ -1,4 +1,3 @@
-
 using MarketPlace.Domain.Categories.ValueObjects;
 using MarketPlace.Domain.Common.BaseErrors.Errors;
 using MarketPlace.Domain.Common.Entities;
@@ -9,7 +8,6 @@ using MarketPlace.Domain.Common.ValueObjects;
 using MarketPlace.Domain.Products.Enums;
 using MarketPlace.Domain.Products.Events;
 using MarketPlace.Domain.Products.ValueObjects;
-
 using MarketPlace.Domain.Vendors.ValueObjects;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -17,8 +15,6 @@ namespace MarketPlace.Domain.Products.Entities;
 
 public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
 {
-
-
     private List<CategoryId> _categoryIds = new();
     private List<Tag> _tags = new();
 
@@ -35,14 +31,11 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
     public IReadOnlyCollection<Tag> Tags => _tags.AsReadOnly();
     public IReadOnlyCollection<CategoryId> CategoryIds => _categoryIds.AsReadOnly();
 
-
-
     public VendorId VendorId { get; private set; } = default!;
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedOnUtc { get; set; }
-
 
     private Product(
         ProductId id,
@@ -53,9 +46,9 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         string sku,
         IEnumerable<Img> images,
         IEnumerable<Tag> tags,
-  
-      VendorId vendorId
-        ) : base(id)
+        VendorId vendorId
+    )
+        : base(id)
     {
         Name = name;
         Description = description;
@@ -64,7 +57,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         Sku = sku;
         _images = new List<Img>(images.Select(img => new Img(img.Url)));
         _tags = new List<Tag>(tags.Select(tag => Tag.Create(tag.Name)));
-       
+
         VendorId = vendorId;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
@@ -80,10 +73,9 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         string sku,
         IEnumerable<Img> images,
         IEnumerable<Tag> tags,
-
         VendorId vendorId,
-    IEnumerable<CategoryId> categoryIds
-        )
+        IEnumerable<CategoryId> categoryIds
+    )
     {
         if (string.IsNullOrWhiteSpace(name))
             return Result<Product>.Failure(ProductError.ProductNameIsRequired());
@@ -97,9 +89,16 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
             throw new DomainException("SKU is required.");
 
         var product = new Product(
-            ProductId.Create(), name, description, price, stockQuantity,
-             sku, images, tags,  vendorId
-            );
+            ProductId.Create(),
+            name,
+            description,
+            price,
+            stockQuantity,
+            sku,
+            images,
+            tags,
+            vendorId
+        );
         foreach (var categoryId in categoryIds)
         {
             product.AddCategory(categoryId);
@@ -107,12 +106,20 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         product.AddDomainEvent(new ProductCreatedEvent(product.Id, vendorId));
         return product;
     }
+
     public void AddCategory(CategoryId categoryId)
     {
         if (!_categoryIds.Contains(categoryId))
             _categoryIds.Add(categoryId);
     }
-    public void UpdateDetails(string name, string description, double price, int stockQuantity, IEnumerable<string> tags)
+
+    public void UpdateDetails(
+        string name,
+        string description,
+        double price,
+        int stockQuantity,
+        IEnumerable<string> tags
+    )
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new DomainException("Product name is required.");
@@ -146,6 +153,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         if (StockQuantity == 0)
             AddDomainEvent(new ProductOutOfStockEvent(Id));
     }
+
     public void ReduceStock(int quantity)
     {
         if (quantity <= 0)
@@ -160,6 +168,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         if (StockQuantity == 0)
             AddDomainEvent(new ProductOutOfStockEvent(Id));
     }
+
     public void IncreaseStock(int quantity)
     {
         if (quantity <= 0)

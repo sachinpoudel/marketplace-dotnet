@@ -1,10 +1,15 @@
 using MarketPlace.Application.Features.Products.Dtos;
 using MarketPlace.Domain.Common.ResultPattern;
 using MediatR;
+using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 
 namespace MarketPlace.Application.Features.Products.Command.Update;
 
-
-
-
-    public record UpdateProductCommand(Guid ProductId, string Name, string Description, decimal Price, int StockQuantity, IEnumerable<string> Tags) : IRequest<Result<UpdatedProductDto>>;
+public record UpdateProductCommand(
+    Guid ProductId,
+    string Name,
+    string Description,
+    double Price,
+    int StockQuantity,
+    IEnumerable<string> Tags
+) : IRequest<Result<UpdatedProductDto>>;

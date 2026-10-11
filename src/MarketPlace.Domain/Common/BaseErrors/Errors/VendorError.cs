@@ -30,5 +30,9 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.Conflict("Vendor already exists.", "A vendor with the same legal name, trade name, and contact email already exists.");
     }
+    public static BaseError VendorNotOwnedByUser()
+    {
+        return BaseError.Forbidden("Vendor not owned by user.", "The specified vendor is not owned by the current user.");
+    }
     
 }
