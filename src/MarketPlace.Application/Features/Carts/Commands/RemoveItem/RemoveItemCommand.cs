@@ -4,4 +4,4 @@ using MediatR;
 
 namespace MarketPlace.Application.Features.Carts.Commands.RemoveItem;
 
-public record class RemoveItemCommand(Guid CartItemId) : IRequest<Result<CartDetailDto>>;
+public record class RemoveItemCommand( Guid CartItemId) : IRequest<Result<CartDetailDto>>;

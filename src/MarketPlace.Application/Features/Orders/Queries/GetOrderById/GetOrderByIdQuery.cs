@@ -4,7 +4,4 @@ using MediatR;
 
 namespace MarketPlace.Application.Features.Orders.Queries.GetOrderById;
 
-public record class GetOrderByIdQuery
-(
-Guid OrderId
-) : IRequest<Result<OrderDetailDto>>;
+public record class GetOrderByIdQuery(Guid OrderId) : IRequest<Result<OrderDetailDto>>;

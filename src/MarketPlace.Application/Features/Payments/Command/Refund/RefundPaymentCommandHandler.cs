@@ -9,7 +9,7 @@ using MarketPlace.Domain.Payments.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace MarketPlace.Application.Features.Payments.Refund;
+namespace MarketPlace.Application.Features.Payments.Command.Refund;
 
 public class RefundPaymentCommandHandler(ICurrentUser currentUser, IPaymentRepository paymentRepository, IUnitOfWork unitOfWork) : IRequestHandler<RefundPaymentCommand, Result<RefundPaymentDto>>
 {

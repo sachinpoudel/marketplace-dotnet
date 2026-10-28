@@ -3,7 +3,7 @@ using MarketPlace.Domain.Common.ResultPattern;
 using MarketPlace.Domain.Payments.Enums;
 using MediatR;
 
-namespace MarketPlace.Application.Features.Payments.Pay;
+namespace MarketPlace.Application.Features.Payments.Command.Pay;
 
 public record class PayPaymentCommand
 (

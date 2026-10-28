@@ -9,43 +9,47 @@ namespace MarketPlace.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-
-
 public class AuthController(ILogger<AuthController> _logger, IMediator _mediator) : ControllerBase
 {
     [HttpPost("register")]
-    public async Task<IActionResult> RegisterUser(RegisterUserCommand request)
+    public async Task<IActionResult> RegisterUser(
+        [FromBody] RegisterUserCommand request,
+        CancellationToken cancellationToken
+    )
     {
-        var result = await _mediator.Send(request);
-        if (!result.IsSuccess)
-        {
-            _logger.LogError("User registration failed");
-            return BadRequest(result.Error);
-        }
-        return Ok(result.Value);
+        var result = await _mediator.Send(request, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
     }
+
     [HttpPost("login")]
-public async Task<IActionResult> LoginUser(LoginUserCommand request)
+    public async Task<IActionResult> LoginUser(
+        [FromBody] LoginUserCommand request,
+        CancellationToken cancellationToken
+    )
     {
-        var result = await _mediator.Send(request);
+        var result = await _mediator.Send(request, cancellationToken);
         if (!result.IsSuccess)
         {
             _logger.LogError("User login failed");
             return BadRequest(result.Error);
         }
+
         return Ok(result.Value);
     }
 
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken(RefreshTokenCommand request)
+    public async Task<IActionResult> RefreshToken(
+        [FromBody] RefreshTokenCommand request,
+        CancellationToken cancellationToken
+    )
     {
-        var result = await _mediator.Send(request);
+        var result = await _mediator.Send(request, cancellationToken);
         if (!result.IsSuccess)
         {
             _logger.LogError("Token refresh failed");
             return BadRequest(result.Error);
         }
+
         return Ok(result.Value);
     }
-
 }

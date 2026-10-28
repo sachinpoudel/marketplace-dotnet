@@ -18,7 +18,7 @@ public class GetProductDetailQueryHandler(IProductQuery productQuery)
         CancellationToken cancellationToken
     )
     {
-        var productId = ProductId.Create(request.Id);
+        var productId = ProductId.Create(request.ProductId);
 
         var product = await productQuery.GetProductDetailAsync(productId, cancellationToken);
 

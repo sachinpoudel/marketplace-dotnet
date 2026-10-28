@@ -5,18 +5,12 @@ using MarketPlace.Infrastructure.Extensions;
 using MarketPlace.Infrastructure.Identity.Services;
 using Serilog;
 
-
-
-
 Log.Logger = new LoggerConfiguration().Enrich.FromLogContext().WriteTo.Console().CreateLogger();
-
 
 try
 {
     Log.Information("Starting web host");
     var builder = WebApplication.CreateBuilder(args);
-
-
 
     builder.Services.AddInfrastructure();
     builder.Services.AddDatabase();
@@ -26,32 +20,21 @@ try
 
     var app = builder.Build();
 
-    var seedIdentityRoles = builder.Configuration.GetValue("Identity:SeedRolesOnStartup", true);
-
-    if (seedIdentityRoles)
-    {
-        await using var scope = app.Services.CreateAsyncScope();
-        var seeder = scope.ServiceProvider.GetRequiredService<MarketPlace.Infrastructure.Identity.Services.IdentitySeeder>();
-        await seeder.SeedAsync(CancellationToken.None);
-    }
+    await app.Services.InitializeDatabaseAsync();
+    await app.Services.SeedIdentityRolesAsync();
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
     }
     app.UseRouting();
+    app.UseCors("myPolicyName");
     app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
     app.MapGet("/", () => "Hello World!");
 
-
-
-
     app.Run();
-
-
-
 }
 catch (Exception ex)
 {

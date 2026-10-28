@@ -3,7 +3,7 @@ using MarketPlace.Domain.Common.ResultPattern;
 using MarketPlace.Domain.Payments.Enums;
 using MediatR;
 
-namespace MarketPlace.Application.Features.Payments.Create;
+namespace MarketPlace.Application.Features.Payments.Command.Create;
 
 public record class CreatePaymentCommand
 (

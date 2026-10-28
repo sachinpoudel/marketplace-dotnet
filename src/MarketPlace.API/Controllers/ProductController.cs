@@ -13,17 +13,15 @@ namespace MarketPlace.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-
 public class ProductController(IMediator mediator) : ControllerBase
 {
-
-
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateProduct(CreateProductCommand request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateProduct(
+        CreateProductCommand request,
+        CancellationToken cancellationToken
+    )
     {
-
-
         var result = await mediator.Send(request, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
     }
@@ -31,17 +29,22 @@ public class ProductController(IMediator mediator) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllProducts(
         [FromQuery] GetProductsListQuery query,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var result = await mediator.Send(query, cancellationToken);
         return Ok(result);
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetProductDetail([FromRoute] GetProductDetailQuery request, CancellationToken cancellationToken)
+    [HttpGet("{productId:guid}")]
+    public async Task<IActionResult> GetProductDetail(
+        [FromRoute] Guid productId,
+        CancellationToken cancellationToken
+    )
     {
+        var query = new GetProductDetailQuery(productId);
+        var result = await mediator.Send(query, cancellationToken);
 
-        var result = await mediator.Send(request, cancellationToken);
-        return Ok(result);
+        return result.IsFailure ? Problem(result.Error.Message) : Ok(result.Value);
     }
 }

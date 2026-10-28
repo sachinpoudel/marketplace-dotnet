@@ -10,7 +10,7 @@ using MarketPlace.Domain.Orders.ValueObjects;
 using MarketPlace.Domain.Payments;
 using MediatR;
 
-namespace MarketPlace.Application.Features.Payments.Create;
+namespace MarketPlace.Application.Features.Payments.Command.Create;
 
 public class CreatePaymentCommandHandler(
     ICurrentUser currentUser,

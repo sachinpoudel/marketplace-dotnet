@@ -33,4 +33,14 @@ public sealed class VendorRepository(ApplicationDbContext context) : IVendorRepo
             v.ContactEmail == contactEmail,
             cancellationToken);
     }
+
+    public async Task UpdateAsync(Vendor vendor, CancellationToken cancellationToken = default)
+    {
+         context.Vendors.Update(vendor); 
+    }
+
+    public IQueryable<Vendor> Query()
+    {
+       return context.Vendors.AsQueryable(); // this will allow us to query the vendors in the database
+    }
 }

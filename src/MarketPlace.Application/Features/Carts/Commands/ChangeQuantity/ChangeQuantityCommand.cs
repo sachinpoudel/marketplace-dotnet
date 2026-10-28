@@ -5,7 +5,7 @@ using MediatR;
 namespace MarketPlace.Application.Features.Carts.Commands.ChangeQuantity;
 
 public record class ChangeQuantityCommand (
-    Guid CartId,
+    Guid CartId ,
     Guid ProductId,
     int Quantity
 ) : IRequest<Result<CartDetailDto>>;

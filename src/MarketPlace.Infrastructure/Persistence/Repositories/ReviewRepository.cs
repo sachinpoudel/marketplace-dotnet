@@ -1,8 +1,10 @@
 using MarketPlace.Application.Common.Interfaces.Repositories;
+using MarketPlace.Domain.Common;
 using MarketPlace.Domain.Products.Entities;
 using MarketPlace.Domain.Products.ValueObjects;
 using MarketPlace.Domain.Reviews.Entities;
 using MarketPlace.Domain.Reviews.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace MarketPlace.Infrastructure.Persistence.Repositories;
 
@@ -11,34 +13,31 @@ public class ReviewRepository(ApplicationDbContext context) : IReviewRepository
 {
     public async Task<Review> AddReviewAsync(Review review)
     {
-        // return await context.Reviews.AddAsync(review);
-
-        throw new NotImplementedException();
+    var reviews = await context.Reviews.AddAsync(review);
+return reviews.Entity;
+        
 
     }
 
-    public Task DeleteReviewAsync(Review review)
+    public async Task DeleteReviewAsync(Review review)
     {
-        throw new NotImplementedException();
+         context.Reviews.Remove(review);
     }
 
-    public Task<Review?> GetReviewByIdAsync(ReviewId id)
+  
+
+    public async Task<Review?> GetReviewByIdAsync(ReviewId id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await context.Reviews.FindAsync(id);
     }
 
-    public Task<Review?> GetReviewByIdAsync(ReviewId id, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Review>> GetReviewsByProductIdAsync(ProductId productId)
     {
-        throw new NotImplementedException();
+         return await context.Reviews.Where(r => r.ProductId == productId && !r.IsDeleted).ToListAsync();
     }
 
-    public Task<IEnumerable<Review>> GetReviewsByProductIdAsync(ProductId productId)
+    public async Task UpdateReviewAsync(Review review)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task UpdateReviewAsync(Review review)
-    {
-        throw new NotImplementedException();
+         context.Reviews.Update(review);
     }
 }

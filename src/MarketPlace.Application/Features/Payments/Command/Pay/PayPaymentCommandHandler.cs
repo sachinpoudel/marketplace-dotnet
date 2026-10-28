@@ -8,7 +8,7 @@ using MarketPlace.Domain.Common.ResultPattern;
 using MarketPlace.Domain.Orders.ValueObjects;
 using MediatR;
 
-namespace MarketPlace.Application.Features.Payments.Pay;
+namespace MarketPlace.Application.Features.Payments.Command.Pay;
 
 public class PayPaymentCommandHandler(
     ICurrentUser currentUser,

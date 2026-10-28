@@ -1,7 +1,7 @@
 using System;
 using FluentValidation;
 
-namespace MarketPlace.Application.Features.Payments.Create;
+namespace MarketPlace.Application.Features.Payments.Command.Create;
 
 public class CreatePaymentValidator : AbstractValidator<CreatePaymentCommand>
 {
