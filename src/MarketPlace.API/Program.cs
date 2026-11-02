@@ -20,15 +20,16 @@ try
 
     var app = builder.Build();
 
-    await app.Services.InitializeDatabaseAsync();
+    // await app.Services.InitializeDatabaseAsync();
     await app.Services.SeedIdentityRolesAsync();
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
     }
     app.UseRouting();
-    app.UseCors("myPolicyName");
-    app.UseHttpsRedirection();
+    app.UseExceptionHandler();
+    // app.UseCors("myPolicyName");
+    // app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();

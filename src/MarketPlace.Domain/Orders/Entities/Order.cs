@@ -12,12 +12,12 @@ public class Order : AggregateRoot<OrderId>
 {
     public Guid UserId { get; private set; }
     public OrderStatus Status { get; private set; }
-    public double TotalAmount { get; private set; }
+    public decimal TotalAmount { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
-    public double ShippingCost { get; private set; }
-    public double SubTotal { get; private set; }
-    public double DiscountAmount { get; private set; }
+    public decimal ShippingCost { get; private set; }
+    public decimal SubTotal { get; private set; }
+    public decimal DiscountAmount { get; private set; }
     public ShippingAddress ShippingAddress { get; private set; } = default!;
 
     public ICollection<OrderItem> Items { get; private set; } = new List<OrderItem>();
@@ -45,7 +45,7 @@ public class Order : AggregateRoot<OrderId>
         return new Order(orderId, userId, shippingAddress);
     }
 
-    public void AddItem(ProductId productId, int quantity, string productName, double price, VendorId vendorId)
+    public void AddItem(ProductId productId, int quantity, string productName, decimal price, VendorId vendorId)
     {
         if (quantity <= 0)
             throw new DomainException(
@@ -128,7 +128,7 @@ public class Order : AggregateRoot<OrderId>
 
         RecalculateTotals();
     }
-    public void SetShippingCost(double amount)
+    public void SetShippingCost(decimal amount)
     {
         EnsurePending();
 
@@ -140,7 +140,7 @@ public class Order : AggregateRoot<OrderId>
 
         RecalculateTotals();
     }
-    public void ApplyDiscount(double amount)
+    public void ApplyDiscount(decimal amount)
     {
         EnsurePending();
 

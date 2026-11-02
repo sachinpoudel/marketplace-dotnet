@@ -28,16 +28,17 @@ public class CartController(IMediator mediator) : ControllerBase
         return result;
     }
 
-    [HttpPut("change-quantity/{cartId:guid}")]
+    [HttpPut("change-quantity/{cartId:guid}/items/{productId:guid}")]
     public async Task<IActionResult> ChangeQuantity(
         [FromRoute] Guid cartId,
+        [FromRoute] Guid productId,
         [FromBody] ChangeQuantityCommand request,
         CancellationToken cancellationToken
     )
     {
           var command = new ChangeQuantityCommand(
         cartId,
-        request.ProductId,
+        productId,
         request.Quantity
     );
 

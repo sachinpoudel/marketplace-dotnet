@@ -37,21 +37,10 @@ public class CreateVendorCommandHandler(
             return Result<VendorDetailDto>.Failure(VendorError.VendorAlreadyExists());
         }
 
-        var currentUserId = currentUser.UserId;
-
-        if (currentUserId == null)
-            return Result<VendorDetailDto>.Failure(UserError.UserNotAuthenticated());
-
-        var userExist = await authService.IsUserExists(currentUserId, cancellationToken);
-
-        if (!userExist)
-        {
-            return Result<VendorDetailDto>.Failure(UserError.UserNotFound());
-        }
-        var convertedUserId = Guid.Parse(currentUserId);
+        var currentUserId = currentUser.GetCurrentUserId();
 
         var result = Vendor.Create(
-            convertedUserId,
+            currentUserId,
             request.LegalName,
             request.TradeName,
             request.Description,

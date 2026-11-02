@@ -4,5 +4,5 @@ public record class UpdateReviewDto
 (
     Guid ReviewId,
     string Content,
-    double Rating
+    decimal Rating
 );

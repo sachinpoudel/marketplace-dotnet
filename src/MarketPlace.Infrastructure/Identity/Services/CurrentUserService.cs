@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MarketPlace.Application.Common.Interfaces.Auth;
 using Microsoft.AspNetCore.Http;
 
@@ -14,20 +15,27 @@ public class CurrentUserService( IHttpContextAccessor httpContextAccessor) : ICu
     public bool IsAuthenticated => httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 
 
+
+
 public Guid GetCurrentUserId()
 {
-    if (IsAuthenticated == false || httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == false)
+    var user = httpContextAccessor.HttpContext?.User;
+
+    if (user?.Identity?.IsAuthenticated != true)
     {
-        throw new InvalidOperationException("User is not authenticated.");
+        throw new UnauthorizedAccessException("User is not authenticated.");
     }
 
-    var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+    var userId =
+        user.FindFirstValue(ClaimTypes.NameIdentifier)
+        ?? user.FindFirstValue("sub");
 
-    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    if (!Guid.TryParse(userId, out var id))
     {
-        throw new InvalidOperationException("User ID claim is missing or invalid.");
+        throw new UnauthorizedAccessException(
+            "User ID claim is missing or invalid.");
     }
 
-    return userId;
+    return id;
 }
 }

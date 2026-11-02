@@ -38,40 +38,40 @@ public class AddCartItemCommandHandler(
         {
             return Result.Failure<CartDetailDto>(ProductError.ProductNotFound());
         }
-        var userId = Guid.Parse(currentUser.UserId);
-
-        var cartByUserId = await cartRepository.GetCartByUserIdAsync(userId, cancellationToken);
-
-        if (cartByUserId is null)
+        var userId = currentUser.GetCurrentUserId();
+        if (userId == Guid.Empty)
         {
-            var cart = Cart.Create(userId);
-            cart.AddItem(productId, request.Quantity);
+            return Result.Failure<CartDetailDto>(UserError.UserNotAuthenticated());
+        }
+
+        var cart = await cartRepository.GetCartByUserIdAsync(userId, cancellationToken);
+
+        var productPrice = product.Price;
+        if (cart is null)
+        {
+             cart = Cart.Create(userId);
             await cartRepository.AddItemToCartAsync(cart, cancellationToken);
         }
-        else
-        {
-            cartByUserId.AddItem(productId, request.Quantity);
-        }
-
+            cart.AddItem(productId, request.Quantity, productPrice);
+        
+        var totalPrice = cart?.CalculateTotalPrice() ?? 0;
+        Console.WriteLine($"Total Price: {totalPrice}"); // Debugging line
+        var TotalCartQuantity = cart?.CalculateTotalQuantity() ?? 0;
         await unitOfWork.CommitAsync(cancellationToken);
-        var totalPrice = cartByUserId?.CalculateTotalPrice() ?? 0;
-        var quantity =
-            cartByUserId?.Items.FirstOrDefault(i => i.ProductId.Equals(productId.Value))?.Quantity
-            ?? 0;
 
         return Result<CartDetailDto>.Success(
             new CartDetailDto(
-                cartByUserId.Id.Value,
-                cartByUserId.UserId,
-                cartByUserId
+                cart.Id.Value,
+                cart.UserId,
+                cart
                     .Items.Select(i => new CartItemDto(
                         i.ProductId.Value,
                         i.Quantity,
-                        cartByUserId.Id.Value,
+                       
                         i.PriceAtTheTimeOfAdding
                     ))
                     .ToList(),
-                quantity,
+                TotalCartQuantity,
                 totalPrice
             )
         );

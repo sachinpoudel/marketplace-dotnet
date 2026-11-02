@@ -8,12 +8,12 @@ public class Review: AggregateRoot<ReviewId>
 {
     public Guid UserId { get; private set; } 
     public string Content { get; private set; } = string.Empty;
-    public double Rating { get; private set; }
+    public decimal Rating { get; private set; }
     public ProductId ProductId { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
-    private Review(ReviewId id, Guid userId, string content, double rating, ProductId productId, DateTime? updatedAt) : base(id)
+    private Review(ReviewId id, Guid userId, string content, decimal rating, ProductId productId, DateTime? updatedAt) : base(id)
 
     {
         Id = id;
@@ -25,11 +25,11 @@ public class Review: AggregateRoot<ReviewId>
         UpdatedAt = updatedAt;
     }
     private Review() { }
-    public static Review Create(ReviewId id, Guid userid, string content, double rating, ProductId productId, DateTime? updatedAt = null)
+    public static Review Create(ReviewId id, Guid userid, string content, decimal rating, ProductId productId, DateTime? updatedAt = null)
     {
         return new Review(id, userid, content, rating, productId, updatedAt);
     }
-    public void Update(string content, double rating, DateTime? updatedAt = null)
+    public void Update(string content, decimal rating, DateTime? updatedAt = null)
     {
         Content = content;
         Rating = rating;

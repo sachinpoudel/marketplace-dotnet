@@ -22,7 +22,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
 
     public string Name { get; private set; } = default!;
     public string Description { get; private set; } = default!;
-    public double Price { get; private set; }
+    public decimal Price { get; private set; }
     public int StockQuantity { get; private set; }
     public string Sku { get; private set; } = default!;
     public ProductStatus Status { get; private set; }
@@ -41,7 +41,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         ProductId id,
         string name,
         string description,
-        double price,
+        decimal price,
         int stockQuantity,
         string sku,
         IEnumerable<Img> images,
@@ -68,7 +68,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
     public static Result<Product> Create(
         string name,
         string description,
-        double price,
+        decimal price,
         int stockQuantity,
         string sku,
         IEnumerable<Img> images,
@@ -116,7 +116,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
     public void UpdateDetails(
         string name,
         string description,
-        double price,
+        decimal price,
         int stockQuantity,
         IEnumerable<string> tags
     )

@@ -56,14 +56,10 @@ public class ChangeQuantityCommandHandler(
                 cart.Items.Select(i => new CartItemDto(
                         i.ProductId.Value,
                         i.Quantity,
-                        cart.Id.Value,
                         i.PriceAtTheTimeOfAdding
                     ))
                     .ToList(),
-                cart.Items.FirstOrDefault(i =>
-                    i.ProductId.Equals(ProductId.Create(request.ProductId))
-                )?.Quantity
-                    ?? 0,
+                cart.CalculateTotalQuantity(),
                 totalPrice
             )
         );

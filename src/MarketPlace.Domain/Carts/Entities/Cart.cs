@@ -21,10 +21,9 @@ public class Cart : AggregateRoot<CartId>
         return new Cart(cartId, userId);
     }
 
-    public void AddItem(ProductId productId, int quantity)
+    public void AddItem(ProductId productId, int quantity, decimal priceAtTheTimeOfAdding)
     {
-        var existingItem = Items.FirstOrDefault(i => i.ProductId.Equals(productId.Value));
-
+        var existingItem = Items.FirstOrDefault(i => i.ProductId.Equals(productId));
         if (existingItem != null)
         {
             existingItem.UpdateQuantity(existingItem.Quantity + quantity);
@@ -32,19 +31,22 @@ public class Cart : AggregateRoot<CartId>
         }
 
         // If no existing item is found, create a new one
-        Items.Add(CartItem.Create(productId, quantity, existingItem?.PriceAtTheTimeOfAdding ?? 0)); // Assuming you have a way to get the price
+        Items.Add(CartItem.Create(productId, quantity, priceAtTheTimeOfAdding)); // Assuming you have a way to get the price
     }
 
-    public double CalculateTotalPrice() =>
+    public int CalculateTotalQuantity() => Items.Sum(item => item.Quantity);
+
+    public decimal CalculateTotalPrice() =>
         Items.Sum(item => item.Quantity * item.PriceAtTheTimeOfAdding);
 
-     public void RemoveItem(CartItemId cartItemId)
+    public void RemoveItem(CartItemId cartItemId)
     {
         Items.Remove(Items.FirstOrDefault(i => i.Id.Equals(cartItemId)));
-    } 
+    }
+
     public void ChangeQuantity(ProductId productId, int newQuantity, int availableStock)
     {
-        var existingItem = Items.FirstOrDefault(i => i.ProductId.Equals(productId.Value));
+        var existingItem = Items.FirstOrDefault(i => i.ProductId.Equals(productId));
         if (existingItem == null)
         {
             throw new InvalidOperationException("Item not found in the cart.");

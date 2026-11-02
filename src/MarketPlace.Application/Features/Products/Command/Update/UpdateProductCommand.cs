@@ -9,7 +9,7 @@ public record UpdateProductCommand(
     Guid ProductId,
     string Name,
     string Description,
-    double Price,
+    decimal Price,
     int StockQuantity,
     IEnumerable<string> Tags
 ) : IRequest<Result<UpdatedProductDto>>;

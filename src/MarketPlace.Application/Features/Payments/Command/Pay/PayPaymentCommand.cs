@@ -5,9 +5,5 @@ using MediatR;
 
 namespace MarketPlace.Application.Features.Payments.Command.Pay;
 
-public record class PayPaymentCommand
-(
-    Guid OrderId,
-  PaymentMethod PaymentMethod,
-  DateTime PaidAt
-): IRequest<Result<PayPaymentDto>>;
+public record class PayPaymentCommand(Guid OrderId, PaymentMethod PaymentMethod, DateTime PaidAt)
+    : IRequest<Result<PayPaymentDto>>;

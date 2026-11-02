@@ -5,7 +5,7 @@ public record ReviewDetailDto (
    Guid ReviewId,
    Guid ProductId,
    Guid UserId,
-   double Rating,
+   decimal Rating,
    string Content,
    DateTime CreatedAt
       

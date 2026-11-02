@@ -1,3 +1,4 @@
+using MarketPlace.API.Handlers;
 using MarketPlace.Application.Features.Orders.Command.Cancel;
 using MarketPlace.Application.Features.Orders.Command.Confirm;
 using MarketPlace.Application.Features.Orders.Command.Create;
@@ -20,57 +21,81 @@ namespace MarketPlace.API.Controllers
     {
         [HttpPost]
         public async Task<IActionResult> CreateOrder(
-            CreateOrderCommand command,
+            [FromBody] CreateOrderCommand command,
             CancellationToken cancellationToken
         )
         {
-            var result = await mediator.Send(command, cancellationToken);
-
-            return result.IsFailure ? Problem(result.Error.Message) : Ok(result.Value);
+            var result = await mediator
+                .Send(command, cancellationToken)
+                .MatchAsync<OrderDetailDto, IActionResult>(
+                    onSuccess => Ok(onSuccess),
+                    onFailure => Problem(onFailure.Message)
+                );
+            return result;
+            // return result.IsFailure ? result.Error.ToActionResult() : Ok(result.Value);
         }
 
         [HttpPost("cancel/{orderId:guid}")]
-        public async Task<IActionResult> CancelOrder([FromRoute] Guid orderId, CancellationToken cancellationToken)
+        public async Task<IActionResult> CancelOrder(
+            [FromRoute] Guid orderId,
+            CancellationToken cancellationToken
+        )
         {
             var command = new CancelOrderCommand(orderId);
-            var result = await mediator.Send(command,cancellationToken);
-            return result.IsFailure ? Problem(result.Error.Message) : Ok(result.Value);
+            return await mediator
+                .Send(command, cancellationToken)
+                .MatchAsync<CancelOrderDto, IActionResult>(
+                    onSuccess => Ok(onSuccess),
+                    onFailure => Problem(onFailure.Message)
+                );
+            // return result.IsFailure ? result.Error.ToActionResult() : Ok(result.Value);
         }
 
         [HttpPost("confirm/{orderId:guid}")]
-        public async Task<IActionResult> ConfirmOrder([FromRoute] Guid orderId, CancellationToken cancellationToken)
+        public async Task<IActionResult> ConfirmOrder(
+            [FromRoute] Guid orderId,
+            CancellationToken cancellationToken
+        )
         {
             var command = new ConfirmOrderCommand(orderId);
             var result = await mediator.Send(command, cancellationToken);
-
-            return result.IsFailure ? Problem(result.Error.Message) : Ok(result.Value);
+            return result.IsFailure ? result.Error.ToActionResult() : Ok(result.Value);
         }
 
         [HttpPost("delivery/{orderId:guid}")]
-        public async Task<IActionResult> DeliverOrder([FromRoute] Guid orderId, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeliverOrder(
+            [FromRoute] Guid orderId,
+            CancellationToken cancellationToken
+        )
         {
             var command = new DeliverOrderCommand(orderId);
             var result = await mediator.Send(command, cancellationToken);
-            return result.IsFailure ? Problem(result.Error.Message) : Ok(result.Value);
+            return result.IsFailure ? result.Error.ToActionResult() : Ok(result.Value);
             // return await result.
         }
 
         [HttpPost("process/{orderId:guid}")]
-        public async Task<IActionResult> ProcessOrder([FromRoute] Guid orderId, CancellationToken cancellationToken)
+        public async Task<IActionResult> ProcessOrder(
+            [FromRoute] Guid orderId,
+            CancellationToken cancellationToken
+        )
         {
             var command = new ProcessOrderCommand(orderId);
             var result = await mediator.Send(command, cancellationToken);
-            return result.IsFailure ? Problem(result.Error.Message) : Ok(result.Value);
+            return result.IsFailure ? result.Error.ToActionResult() : Ok(result.Value);
         }
 
         [HttpPost("ship/{orderId:guid}")]
         public async Task<IActionResult> ShipOrder(
-            [FromRoute] Guid orderId  ,       CancellationToken cancellationToken
+            [FromRoute] Guid orderId,
+            CancellationToken cancellationToken
         )
         {
             var command = new ShipOrderCommand(orderId);
             var updatedResult = await mediator.Send(command, cancellationToken);
-            return updatedResult.IsFailure ? Problem(updatedResult.Error.Message) : Ok(updatedResult.Value);
+            return updatedResult.IsFailure
+                ? updatedResult.Error.ToActionResult()
+                : Ok(updatedResult.Value);
         }
 
         [HttpGet("my-orders")]
@@ -86,15 +111,20 @@ namespace MarketPlace.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("orders/{orderId:guid}")]
+        [HttpGet("{orderId:guid}")]
         public async Task<IActionResult> GetOrderById(
             [FromRoute] Guid orderId,
             CancellationToken cancellationToken = default
         )
         {
+            if(orderId == Guid.Empty)
+            {
+                return BadRequest("Invalid order ID.");
+            }
             var query = new GetOrderByIdQuery(orderId);
+            Console.WriteLine($"Received request to get order with ID: {orderId}"); // Debugging line
             var result = await mediator.Send(query, cancellationToken);
-            return result.IsFailure ? Problem(result.Error.Message) : Ok(result.Value);
+            return result.IsFailure ? result.Error.ToActionResult() : Ok(result.Value);
         }
     }
 }

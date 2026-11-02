@@ -7,7 +7,7 @@ public record  ProductDetailDto(
     Guid Id,
     string Name,
     string Description,
-    double Price,
+    decimal Price,
     int StockQuantity,
     string Sku,
     List<string> ImageUrl,

@@ -3,7 +3,7 @@ using MarketPlace.Domain.Common.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 
-namespace PortfolioApp.WebApi.Handlers;
+namespace MarketPlace.API.Handlers;
 
 
 public static class GlobalErrorHandler

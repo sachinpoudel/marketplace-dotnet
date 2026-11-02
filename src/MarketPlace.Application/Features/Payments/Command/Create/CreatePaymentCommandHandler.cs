@@ -37,7 +37,7 @@ public class CreatePaymentCommandHandler(
         {
             return Result<PaymentDetailsDto>.Failure(OrderError.OrderNotFound());
         }
-        if(order.Status  == OrderStatus.Cancelled)
+        if (order.Status == OrderStatus.Cancelled)
         {
             return Result<PaymentDetailsDto>.Failure(OrderError.OrderCancelled());
         }
@@ -50,8 +50,7 @@ public class CreatePaymentCommandHandler(
             currentUserId,
             order.TotalAmount,
             request.Method,
-   
-            request.PaidAt
+            DateTime.UtcNow
         );
 
         var paymentCreated = await paymentRepository.CreatePaymentAsync(payment, cancellationToken);
@@ -64,7 +63,6 @@ public class CreatePaymentCommandHandler(
                 paymentCreated.Amount,
                 paymentCreated.Status,
                 paymentCreated.Method,
-           
                 paymentCreated.PaidAt,
                 paymentCreated.CreatedAt
             )

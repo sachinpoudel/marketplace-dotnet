@@ -4,5 +4,5 @@ using MediatR;
 
 namespace MarketPlace.Application.Features.Reviews.Command.Create;
 
-public record CreateReviewcommand(string Content, double Rating, Guid ProductId)
+public record CreateReviewcommand(string Content, decimal Rating, Guid ProductId)
     : IRequest<Result<ReviewDetailDto>>;

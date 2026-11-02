@@ -7,6 +7,6 @@ public record class OrderItemDto
     Guid ProductId,
     string ProductName,
     int Quantity,
-    double Price,
+    decimal Price,
     Guid VendorId
 );

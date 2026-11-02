@@ -6,7 +6,7 @@ namespace MarketPlace.Application.Features.Products.Dtos;
 public sealed record ProductsListItemDto (
 Guid Id,
 string Name,
-double Price,
+decimal Price,
 IEnumerable<string> ImageUrl,
 string Status,
 string Description,

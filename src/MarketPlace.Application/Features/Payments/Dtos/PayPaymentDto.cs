@@ -8,7 +8,7 @@ public record class PayPaymentDto
     Guid Id,
     Guid OrderId,
     Guid UserId,
-    double Amount,
+    decimal Amount,
     PaymentStatus Status,
     PaymentMethod Method,
     DateTime PaidAt,

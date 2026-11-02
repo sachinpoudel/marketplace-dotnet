@@ -42,11 +42,10 @@ public class RemoveItemCommandHandler(
                 cart.Items.Select(i => new CartItemDto(
                         i.ProductId.Value,
                         i.Quantity,
-                        cart.Id.Value,
                         i.PriceAtTheTimeOfAdding
                     ))
                     .ToList(),
-                itemToRemove?.Quantity ?? 0,
+                cart.CalculateTotalQuantity(),
                 cart.CalculateTotalPrice()
             )
         );

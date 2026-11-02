@@ -22,8 +22,22 @@ public sealed class VendorRepository(ApplicationDbContext context) : IVendorRepo
 
     public async Task<Vendor?> GetActiveByIdAsync(VendorId vendorId, CancellationToken cancellationToken = default)
     {
-        return await context.Vendors
-            .FirstOrDefaultAsync(v => v.Id == vendorId && v.Status == VendorStatus.Active, cancellationToken);
+      var vendor = await context.Vendors
+    .FirstOrDefaultAsync(
+        v => v.Id == vendorId,
+        cancellationToken);
+
+Console.WriteLine($"Requested VendorId: {vendorId.Value}");
+Console.WriteLine($"Vendor found: {vendor is not null}");
+Console.WriteLine($"Vendor status: {vendor?.Status}");
+
+if (vendor is not null && vendor.Status != VendorStatus.Active)
+{
+    Console.WriteLine("Vendor exists but is not Active.");
+}
+
+return vendor?.Status == VendorStatus.Active ? vendor : null;
+
     }
 
     public async Task<bool> ExistsAsync( string contactEmail, CancellationToken cancellationToken = default)
@@ -42,5 +56,10 @@ public sealed class VendorRepository(ApplicationDbContext context) : IVendorRepo
     public IQueryable<Vendor> Query()
     {
        return context.Vendors.AsQueryable(); // this will allow us to query the vendors in the database
+    }
+
+    public async Task<Vendor?> GetVendorUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await context.Vendors.FirstOrDefaultAsync(v => v.UserId == userId, cancellationToken);
     }
 }

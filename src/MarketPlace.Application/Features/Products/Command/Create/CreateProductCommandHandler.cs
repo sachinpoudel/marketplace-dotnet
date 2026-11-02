@@ -52,14 +52,19 @@ public class CreateProductCommandHandler
         // Request already carries strongly-typed value objects
         var categoryIds = request.CategoryIds.Select(CategoryId.Create).ToList(); //gets the category ids from the request and converts them to CategoryId value objects
 
-        var currentVendorId = Guid.Parse(_currentUser.UserId);
-        if (currentVendorId == Guid.Empty)
+        var currentUserId = _currentUser.GetCurrentUserId();
+        Console.WriteLine($"CurrentUserId: {currentUserId}"); // Log the current user id for debugging
+        if (currentUserId == Guid.Empty)
         {
             return Result<ProductsListItemDto>.Failure(UserError.UserNotAuthenticated());
         }
-
-        var vendorId = VendorId.Create(currentVendorId);
-
+        var vendor = await _vendor_repository.GetVendorUserIdAsync(currentUserId, cancellationToken);
+        // var vendorId = VendorId.Create(currentUserId); // assuming the vendorId is the same as the current user's id
+        // Console.WriteLine($"VendorId: {vendorId.Value}"); // Log the vendorId for debugging
+        if (vendor is null)
+        {
+            return Result<ProductsListItemDto>.Failure(VendorError.VendorNotFoundOrInactive());
+        }
         var validCategoryCount = await _category_repository.CountValidLeafCategoriesAsync(
             categoryIds,
             cancellationToken
@@ -67,9 +72,13 @@ public class CreateProductCommandHandler
         if (validCategoryCount != categoryIds.Count)
             return Result<ProductsListItemDto>.Failure(CategoryError.InvalidOrNonLeafCategories());
 
-        var vendor = await _vendor_repository.GetActiveByIdAsync(vendorId, cancellationToken);
-        if (vendor is null)
+        var activeVendor = await _vendor_repository.GetActiveByIdAsync(vendor.Id, cancellationToken);
+        Console.WriteLine($"Vendor: {vendor?.Id}"); // Log the vendor for debugging
+        if (activeVendor is null)
             return Result<ProductsListItemDto>.Failure(VendorError.VendorNotFoundOrInactive());
+
+        // if (vendor.UserId != currentUserId)
+        //     return Result<ProductsListItemDto>.Failure(VendorError.VendorNotOwnedByUser());
 
         var images =
             request
@@ -93,7 +102,7 @@ public class CreateProductCommandHandler
             request.Sku,
             images,
             tags,
-            vendorId,
+            activeVendor.Id,
             categoryIds
         );
 

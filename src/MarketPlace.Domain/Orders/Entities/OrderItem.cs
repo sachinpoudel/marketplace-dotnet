@@ -13,8 +13,8 @@ public class OrderItem : Entity<OrderItemId>
   public VendorId VendorId { get; private set; }
   public int Quantity { get; private set; }
   public string ProductName { get; private set; } = default!;
-  public double Price { get; private set; }
-  public double SubTotal => Price * Quantity;
+  public decimal Price { get; private set; }
+  public decimal SubTotal => Price * Quantity;
 
   private OrderItem() { } // For EF Core
 
@@ -27,9 +27,9 @@ public class OrderItem : Entity<OrderItemId>
   {
       Quantity = quantity;
   }
-
-  public OrderItem(ProductId productId, int quantity, string productName, double price, OrderId orderId, VendorId vendorId) 
+  public OrderItem(OrderItemId id,ProductId productId, int quantity, string productName, decimal price, OrderId orderId, VendorId vendorId) : base(id)
     {
+       
         ProductId = productId;
         Quantity = quantity;
         ProductName = productName;
@@ -37,9 +37,9 @@ public class OrderItem : Entity<OrderItemId>
         OrderId = orderId;
         VendorId = vendorId;
     }
-   public static OrderItem Create(ProductId productId, int quantity, string productName, double price, OrderId orderId, VendorId vendorId)
+   public static OrderItem Create(ProductId productId, int quantity, string productName, decimal price, OrderId orderId, VendorId vendorId)
     {
         var orderItemId = OrderItemId.Create();
-        return new OrderItem(productId, quantity, productName, price, orderId, vendorId);
+        return new OrderItem(orderItemId, productId, quantity, productName, price, orderId, vendorId);
     }
 }

@@ -31,8 +31,8 @@ public class GetOrderByIdQueryHandler(ICurrentUser currentUser, IOrderRepository
         }
         return Result<OrderDetailDto>.Success(
             new OrderDetailDto(
-                Guid.Parse(order.Id.ToString()),
-                Guid.Parse(order.UserId.ToString()),
+                order.Id.Value,
+                order.UserId,
                 new ShippingAddressDto(
                     order.ShippingAddress.FullName,
                     order.ShippingAddress.AddressLine1,

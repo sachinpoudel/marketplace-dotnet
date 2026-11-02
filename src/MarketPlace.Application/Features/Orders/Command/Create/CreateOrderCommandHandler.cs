@@ -30,8 +30,13 @@ public class CreateOrderCommandHandler(
         {
             return Result<OrderDetailDto>.Failure(UserError.UserNotAuthenticated());
         }
-        var cart = await cartRepository.GetCartByUserIdAsync(currentUserId, cancellationToken);
-        if (cart == null)
+
+        var cart =
+            request.CartId != Guid.Empty
+                ? await cartRepository.GetCartByIdAsync(request.CartId, cancellationToken)
+                : await cartRepository.GetCartByUserIdAsync(currentUserId, cancellationToken);
+
+        if (cart == null || cart.UserId != currentUserId)
         {
             return Result<OrderDetailDto>.Failure(CartError.CartNotFound());
         }
@@ -42,7 +47,7 @@ public class CreateOrderCommandHandler(
 
         var productIds = cart.Items.Select(i => i.ProductId).ToList();
 
-        var products = await productRepository.GetByIdsAsync(productIds, cancellationToken);
+        var products = await productRepository.GetByIdsAsync(productIds, cancellationToken); // for checking if all products exist and their status and stock
 
         if (products.Count() != productIds.Count)
         {
@@ -60,19 +65,26 @@ public class CreateOrderCommandHandler(
         foreach (var cartitem in cart.Items)
         {
             var product = products.FirstOrDefault(p => p.Id == cartitem.ProductId);
-            if(product == null)
+            if (product == null)
             {
                 return Result<OrderDetailDto>.Failure(ProductError.ProductNotFound());
             }
             var status = product.Status;
-            if (status != Domain.Products.Enums.ProductStatus.Available)
+            Console.WriteLine($"Product {product.Id.Value} status: {status}"); // Debugging line
+            if (status != Domain.Products.Enums.ProductStatus.Available && status != Domain.Products.Enums.ProductStatus.Active)
             {
-                return Result<OrderDetailDto>.Failure(ProductError.ProductUnavailable());
+                Console.WriteLine($"Product {product.Id.Value} is not available or active. Status: {status}"); // Debugging line
+                return Result<OrderDetailDto>.Failure(
+                    ProductError.ProductUnavailable(product.Id.Value)
+                );
             }
             var stock = product?.StockQuantity ?? 0;
+            Console.WriteLine($"Product {product.Id.Value} stock: {stock}, requested quantity: {cartitem.Quantity}"); // Debugging line
             if (cartitem.Quantity > stock)
             {
-                return Result<OrderDetailDto>.Failure(ProductError.InsufficientStock());
+                return Result<OrderDetailDto>.Failure(
+                    ProductError.InsufficientStock(product.Id.Value)
+                );
             }
 
             order.AddItem(

@@ -4,3 +4,13 @@ GET {{MarketPlace.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+POST {{MarketPlace.API_HostAddress}}/api/payment
+Content-Type: application/json
+
+{
+	"orderId": "11111111-2222-3333-4444-555555555555",
+	"method": 1
+}
+
+###

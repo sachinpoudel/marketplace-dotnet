@@ -23,6 +23,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     public IOrderRepository OrderRepository { get; }
     public ICartRepository CartRepository { get; }
     public IPaymentRepository PaymentRepository { get; }
+    public IReviewRepository ReviewRepository { get; }
 
     public UnitOfWork(
         ApplicationDbContext context,
@@ -32,6 +33,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         IOrderRepository orderRepository,
         ICartRepository cartRepository,
         IPaymentRepository paymentRepository,
+        IReviewRepository reviewRepository,
         IPublisher publisher
     )
     {
@@ -42,6 +44,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         OrderRepository = orderRepository;
         CartRepository = cartRepository;
         PaymentRepository = paymentRepository;
+        ReviewRepository = reviewRepository;
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
     }
 

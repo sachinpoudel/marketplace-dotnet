@@ -8,5 +8,5 @@ public record class UpdateReviewCommand
 (
     Guid ReviewId,
     string Content,
-    double Rating
+    decimal Rating
 ) : IRequest<Result<UpdateReviewDto>>;

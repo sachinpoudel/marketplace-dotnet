@@ -41,7 +41,7 @@ public class IdentityAuthService(
         if (!result.Succeeded)
         {
             var errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
-
+Console.WriteLine($"User creation failed: {errorMessage}");
             return Result.Failure<AuthSessionData>(UserError.UserCreationFailed());
         }
         var token = await CreateSessionAsync(user, cancellationToken);

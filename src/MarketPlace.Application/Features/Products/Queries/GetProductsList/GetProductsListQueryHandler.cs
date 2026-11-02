@@ -1,14 +1,68 @@
+// using MarketPlace.Application.Common.Interfaces.Repositories;
+// using MarketPlace.Application.Common.Models;
+// using MarketPlace.Application.Features.Products.Dtos;
+// using MarketPlace.Domain.Common.ValueObjects;
+// using System.Linq;
+// using System.Collections.Generic;
+// using MediatR;
+
+// namespace MarketPlace.Application.Features.Products.Queries.GetProductsList;
+
+// public class GetProductsListQueryHandler : IRequestHandler<GetProductsListQuery, PaginatedList<ProductsListItemDto>>
+// {
+//     private readonly IProductRepository _productRepository;
+
+//     public GetProductsListQueryHandler(IProductRepository productRepository)
+//     {
+//         _productRepository = productRepository;
+//     }
+
+//     public async Task<PaginatedList<ProductsListItemDto>> Handle(GetProductsListQuery request, CancellationToken cancellationToken)
+//     {
+        
+//         var query = _productRepository.Query();
+
+
+//         if(request.CategoryId is not null)
+//         {
+//             query = query.Where(p => p.CategoryIds.Contains(request.CategoryId));
+//         }
+//         if(request.VendorId is not null)
+//         {
+//             query = query.Where(p => p.VendorId == request.VendorId);
+//         }
+
+//         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+//             query = query.Where(p => p.Name.Contains(request.SearchTerm));
+
+//         var projected = query.OrderByDescending(p => p.CreatedAt).Select(p => new ProductsListItemDto(
+//             p.Id.Value,
+//             p.Name,
+//             p.Price,
+//             p.Images.Select(x => x.Url),
+//             p.Status.ToString(),
+//             p.Description,
+//             p.Tags.Select(x => x.Name),
+//             p.Sku,
+//             p.StockQuantity
+//         ));
+
+//      return await projected.ToPaginatedListAsync(request.PageNumber, request.PageSize, cancellationToken);
+//     }
+// }
+
+
+
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Common.Models;
 using MarketPlace.Application.Features.Products.Dtos;
-using MarketPlace.Domain.Common.ValueObjects;
-using System.Linq;
-using System.Collections.Generic;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace MarketPlace.Application.Features.Products.Queries.GetProductsList;
 
-public class GetProductsListQueryHandler : IRequestHandler<GetProductsListQuery, PaginatedList<ProductsListItemDto>>
+public class GetProductsListQueryHandler
+    : IRequestHandler<GetProductsListQuery, PaginatedList<ProductsListItemDto>>
 {
     private readonly IProductRepository _productRepository;
 
@@ -17,36 +71,59 @@ public class GetProductsListQueryHandler : IRequestHandler<GetProductsListQuery,
         _productRepository = productRepository;
     }
 
-    public async Task<PaginatedList<ProductsListItemDto>> Handle(GetProductsListQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedList<ProductsListItemDto>> Handle(
+        GetProductsListQuery request,
+        CancellationToken cancellationToken)
     {
-        
-        var query = _productRepository.Query();
+        var query = _productRepository.Query().AsNoTracking();
 
-
-        if(request.CategoryId is not null)
+        if (request.CategoryId is not null)
         {
-            query = query.Where(p => p.CategoryIds.Contains(request.CategoryId));
+            query = query.Where(p =>
+                p.CategoryIds.Contains(request.CategoryId));
         }
-        if(request.VendorId is not null)
+
+        if (request.VendorId is not null)
         {
-            query = query.Where(p => p.VendorId == request.VendorId);
+            query = query.Where(p =>
+                p.VendorId == request.VendorId);
         }
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-            query = query.Where(p => p.Name.Contains(request.SearchTerm));
+        {
+            query = query.Where(p =>
+                p.Name.Contains(request.SearchTerm));
+        }
 
-        var projected = query.OrderByDescending(p => p.CreatedAt).Select(p => new ProductsListItemDto(
+        // Count matching products before pagination.
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // Fetch only the requested page of products.
+        var products = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((request.PageNumber - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync(cancellationToken);
+
+        // Map value objects to DTOs in memory.
+        var items = products.Select(p => new ProductsListItemDto(
             p.Id.Value,
             p.Name,
             p.Price,
-            p.Images.Select(x => x.Url),
+            p.Images.Select(x => x.Url).ToList(),
             p.Status.ToString(),
             p.Description,
-            p.Tags.Select(x => x.Name),
+            p.Tags.Select(x => x.Name).ToList(),
             p.Sku,
             p.StockQuantity
-        ));
+        )).ToList();
 
-     return await projected.ToPaginatedListAsync(request.PageNumber, request.PageSize, cancellationToken);
+        // Use the constructor signature from your existing PaginatedList.
+        return new PaginatedList<ProductsListItemDto>(
+            items,
+            totalCount,
+            request.PageNumber,
+            request.PageSize
+        );
     }
 }

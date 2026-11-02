@@ -5,12 +5,5 @@ using MediatR;
 
 namespace MarketPlace.Application.Features.Payments.Command.Create;
 
-public record class CreatePaymentCommand
-(
-  Guid Id,
-  Guid OrderId,
-
-    PaymentMethod Method,
-
-  DateTime PaidAt
-) : IRequest<Result<PaymentDetailsDto>>;
+public record class CreatePaymentCommand(Guid OrderId, PaymentMethod Method)
+    : IRequest<Result<PaymentDetailsDto>>;

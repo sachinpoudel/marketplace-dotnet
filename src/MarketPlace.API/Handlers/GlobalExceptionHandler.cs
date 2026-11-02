@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace PortfolioApp.WebApi.Handlers;
+namespace  MarketPlace.API.Handlers;
 
 
 public class GlobalExceptionHandler : IExceptionHandler

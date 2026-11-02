@@ -39,6 +39,10 @@ services.AddJwt();
         services.AddScoped<IVendorRepository, VendorRepository>();
         services.AddScoped<IProductQuery, ProductQuery>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<ICartRepository, CartRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        
         services.AddScoped<IAuthService, IdentityAuthService>();
         services.AddScoped<JwtTokenService>();
         services.AddScoped<IdentitySeeder>();
