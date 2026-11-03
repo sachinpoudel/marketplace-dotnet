@@ -54,7 +54,7 @@ public class Cart : AggregateRoot<CartId>
 
         int oldQuantity = existingItem?.Quantity ?? 0;
 
-        if (newQuantity > oldQuantity)
+        if (newQuantity > oldQuantity) // new = 5 and old = 3, then we need to add 2 more, check if stock is available
         {
             int amountToAdd = newQuantity - oldQuantity;
             if (amountToAdd > availableStock)
@@ -65,12 +65,15 @@ public class Cart : AggregateRoot<CartId>
             }
             existingItem?.UpdateQuantity(newQuantity);
         }
-        else if (newQuantity < oldQuantity)
+        else if (newQuantity < oldQuantity) // new = 2 and old = 5, then we need to remove 3, no need to check stock
         {
             var amountToRemove = oldQuantity - newQuantity;
             if (newQuantity <= 0)
             {
-                Items.Remove(existingItem);
+                Items.Remove(existingItem); // Remove the item if the new quantity is zero or less
+            }
+            else
+            {
                 throw new InvalidOperationException("Quantity cannot be negative.");
             }
             existingItem?.UpdateQuantity(newQuantity);

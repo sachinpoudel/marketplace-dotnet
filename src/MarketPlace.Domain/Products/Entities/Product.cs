@@ -126,7 +126,8 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
 
         if (price < 0)
             throw new DomainException("Product price cannot be negative.");
-
+if(stockQuantity < 0)
+            throw new DomainException("Stock quantity cannot be negative.");
         Name = name;
         Description = description;
         Price = price;

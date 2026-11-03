@@ -52,3 +52,6 @@ src/*/obj/
 
 # Application settings
 appsettings.Development.json
+
+#docs
+docs #this is a folder that contains documentation files and should be ignored by version control systems.

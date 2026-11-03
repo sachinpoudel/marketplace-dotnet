@@ -3,6 +3,7 @@ using MarketPlace.Application.Common.Interfaces.Auth;
 using MarketPlace.Application.Features.Auth.Dtos;
 using MarketPlace.Domain.Common.BaseErrors.Errors;
 using MarketPlace.Domain.Common.ResultPattern;
+using MarketPlace.Infrastructure.Identity.Mappers;
 using MarketPlace.Infrastructure.Identity.Models;
 using MarketPlace.Infrastructure.Persistence;
 using MarketPlace.Infrastructure.Persistence.Options;
@@ -40,30 +41,37 @@ public class IdentityAuthService(
 
         if (!result.Succeeded)
         {
-            var errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
-Console.WriteLine($"User creation failed: {errorMessage}");
-            return Result.Failure<AuthSessionData>(UserError.UserCreationFailed());
+            return Result.Failure<AuthSessionData>(IdentityErrorMapper.Map(result.Errors));
         }
-        var token = await CreateSessionAsync(user, cancellationToken);
-        if (
-            token is null
-            || string.IsNullOrEmpty(token.AccessToken)
-            || string.IsNullOrEmpty(token.RefreshToken)
-        )
+        var roleResult = await AddToRoleAsync(user.Id, UserRole.Customer);
+        if (!roleResult)
         {
-            return Result.Failure<AuthSessionData>(UserError.UserCreationFailed());
+            return Result.Failure<AuthSessionData>(UserError.RoleAssignmentFailed());
         }
-
-        await AddToRoleAsync(user.Id, UserRole.Customer);
-
-        return new AuthSessionData(
-            user.Id,
-            user.Email!,
-            token.AccessToken,
-            token.AccessTokenExpiresAtUtc,
-            token.RefreshToken,
-            token.RefreshTokenExpiresAtUtc
-        );
+        try
+        {
+            var token = await CreateSessionAsync(user, cancellationToken);
+            if (
+                token is null
+                || string.IsNullOrEmpty(token.AccessToken)
+                || string.IsNullOrEmpty(token.RefreshToken)
+            )
+            {
+                return Result<AuthSessionData>.Success(token);
+            }
+            return new AuthSessionData(
+                user.Id,
+                user.Email!,
+                token.AccessToken,
+                token.AccessTokenExpiresAtUtc,
+                token.RefreshToken,
+                token.RefreshTokenExpiresAtUtc
+            );
+        }
+        catch (System.Exception)
+        {
+            return Result.Failure<AuthSessionData>(UserError.SessionCreationFailed());
+        }
     }
 
     public async Task<Result<AuthSessionData>> LoginAsync(
@@ -84,6 +92,10 @@ Console.WriteLine($"User creation failed: {errorMessage}");
         }
 
         var token = await CreateSessionAsync(user, cancellationToken);
+        if(token is null || string.IsNullOrEmpty(token.AccessToken) || string.IsNullOrEmpty(token.RefreshToken))
+        {
+            return Result.Failure<AuthSessionData>(UserError.SessionCreationFailed());
+        }
 
         return new AuthSessionData(
             user.Id,
@@ -188,48 +200,54 @@ Console.WriteLine($"User creation failed: {errorMessage}");
     }
 
     Task<bool> IAuthService.IsInRoleAsync(
-        string userId,
+        Guid userId,
         string roleName,
         CancellationToken cancellationToken
     )
     {
-        var user = _userManager.FindByIdAsync(userId);
-        if (user == null)
-        {
-            throw new Exception("User not found.");
-        }
-        var isInRole = _userManager.IsInRoleAsync(user.Result, roleName).Result;
-        return Task.FromResult(isInRole);
-    }
-
-    public async Task<bool> AddToRoleAsync(Guid userId, string roleName)
-    {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null)
-            return false;
-
-        var result = await _userManager.AddToRoleAsync(user, roleName);
-        return result.Succeeded;
-    }
-
-    Task<List<string>> IAuthService.GetUserRolesAsync(
-        string userId,
-        CancellationToken cancellationToken
-    )
-    {
-        var user = _userManager.FindByIdAsync(userId);
-        if (user == null)
-        {
-            throw new Exception("User not found.");
-        }
-        var userRole = _userManager.AccessFailedAsync(user.Result).Result;
-        var roles = _userManager.GetRolesAsync(user.Result).Result;
-        return Task.FromResult(roles.ToList());
-    }
-
-    public Task<bool> IsUserExists(string userId, CancellationToken cancellationToken)
-    {
         var user = _userManager.FindByIdAsync(userId.ToString());
-        return Task.FromResult(user != null);
+        if (user == null)
+        {
+            throw new Exception("User not found.");
+        }
+        var isInRole = _userManager.IsInRoleAsync(user.Result, roleName);
+        return isInRole;
     }
+    
+ public async Task<bool> AddToRoleAsync(Guid userId, string roleName)
+{
+    var user = await _userManager.FindByIdAsync(userId.ToString());
+
+    if (user is null)
+        return false;
+
+    var result = await _userManager.AddToRoleAsync(user, roleName);
+
+    return result.Succeeded;
+}
+
+public async Task<List<string>> GetUserRolesAsync(
+    string userId,
+    CancellationToken cancellationToken)
+{
+    var user = await _userManager.FindByIdAsync(userId);
+
+    if (user is null)
+        throw new Exception("User not found.");
+
+    var roles = await _userManager.GetRolesAsync(user);
+
+    return roles.ToList();
+}
+
+ public async Task<bool> IsUserExists(
+    string userId,
+    CancellationToken cancellationToken)
+{
+    cancellationToken.ThrowIfCancellationRequested();
+
+    var user = await _userManager.FindByIdAsync(userId);
+
+    return user is not null;
+}
 }

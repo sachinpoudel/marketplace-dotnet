@@ -33,7 +33,6 @@ public class CancelOrderCommandHandler(
             cancellationToken
         );
         if (order == null)
-
         {
             return Result<CancelOrderDto>.Failure(OrderError.OrderNotFound());
         }
@@ -51,8 +50,15 @@ public class CancelOrderCommandHandler(
                 product.IncreaseStock(item.Quantity);
             }
         }
-        
+
         await unitOfWork.CommitAsync(cancellationToken);
-        return Result<CancelOrderDto>.Success(new CancelOrderDto(Guid.Parse(order.Id.ToString())));
+        return Result<CancelOrderDto>.Success(new CancelOrderDto(
+            order.Id.Value,
+            order.Status,
+            order.CancelledAt
+            
+
+
+        ));
     }
 }

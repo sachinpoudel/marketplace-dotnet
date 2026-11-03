@@ -3,6 +3,7 @@ using MarketPlace.Domain.Common.Entities;
 using MarketPlace.Domain.Common.Exceptions;
 using MarketPlace.Domain.Orders.ValueObjects;
 using MarketPlace.Domain.Payments.Enums;
+using MarketPlace.Domain.Payments.Events;
 using MarketPlace.Domain.Payments.ValueObjects;
 
 namespace MarketPlace.Domain.Payments;
@@ -44,7 +45,6 @@ public class Payment : AggregateRoot<PaymentId>
         OrderId orderId,
         Guid userId,
         decimal amount,
-
         PaymentMethod method,
         DateTime paidAt
     )
@@ -61,25 +61,30 @@ public class Payment : AggregateRoot<PaymentId>
         );
     }
 
-    public void MarkAsPaid( )
+    public void MarkAsPaid()
     {
+        if (Status != PaymentStatus.Pending)
+        {
+            throw new DomainException("Only pending payments can be marked as paid.");
+        }
         Status = PaymentStatus.Completed;
-         TransactionId = $"MOCK-{Guid.NewGuid()}";
-       
+        TransactionId = $"MOCK-{Guid.NewGuid()}";
+        PaidAt = DateTime.UtcNow;
+        AddDomainEvent(
+            new PaymentPaidEvent(Id.Value, OrderId.Value, Amount, TransactionId!, PaidAt)
+        );
     }
 
     public void MarkAsFailed()
     {
         Status = PaymentStatus.Failed;
-        
     }
 
     public void MarkAsRefunded()
     {
-           if (Status != PaymentStatus.Completed)
-        throw new DomainException("Only paid payments can be refunded.");
+        if (Status != PaymentStatus.Completed)
+            throw new DomainException("Only paid payments can be refunded.");
 
         Status = PaymentStatus.Refunded;
-      
     }
 }

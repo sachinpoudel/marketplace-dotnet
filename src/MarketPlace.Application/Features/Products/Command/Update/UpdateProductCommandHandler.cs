@@ -16,9 +16,9 @@ public class UpdateProductCommandHandler(ICurrentUser currentUser, IProductRepos
 {
     public async Task<Result<UpdatedProductDto>> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
-        var currentUserId = currentUser.UserId;
+        var currentUserId = currentUser.GetCurrentUserId();
 
-        if (currentUserId == null)
+        if (currentUserId == Guid.Empty)
         {
 
             return Result<UpdatedProductDto>.Failure(UserError.UserNotAuthenticated());
@@ -36,6 +36,10 @@ public class UpdateProductCommandHandler(ICurrentUser currentUser, IProductRepos
         if (product == null)
         {
             return Result<UpdatedProductDto>.Failure(ProductError.ProductNotFound());
+        }
+        if(product.VendorId.Value != currentUserId)
+        {
+            return Result<UpdatedProductDto>.Failure(ProductError.ProductNotOwnedByUser());
         }
 
         product.UpdateDetails(request.Name, request.Description, request.Price, request.StockQuantity, request.Tags);

@@ -14,5 +14,9 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.NotFound("Review Not Found", "The review you are trying to access does not exist");
     }
+    public static BaseError UserHasNotPurchasedProduct()
+    {
+        return BaseError.BadRequest("User Has Not Purchased Product", "You cannot review a product you have not purchased");
+    }
     
 }

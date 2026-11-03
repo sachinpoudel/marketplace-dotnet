@@ -14,13 +14,15 @@ public class Order : AggregateRoot<OrderId>
     public OrderStatus Status { get; private set; }
     public decimal TotalAmount { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public DateTime CancelledAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public decimal ShippingCost { get; private set; }
     public decimal SubTotal { get; private set; }
     public decimal DiscountAmount { get; private set; }
     public ShippingAddress ShippingAddress { get; private set; } = default!;
+    private readonly List<OrderItem> _items = new();
 
-    public ICollection<OrderItem> Items { get; private set; } = new List<OrderItem>();
+    public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 
     private Order() { }
 
@@ -68,7 +70,7 @@ public class Order : AggregateRoot<OrderId>
         }
         else
         {
-            Items.Add(
+            _items.Add(
                 OrderItem.Create(
                     productId,
                     quantity,
@@ -92,7 +94,7 @@ public class Order : AggregateRoot<OrderId>
         if (item is null)
             throw new DomainException("Item not found.");
 
-        Items.Remove(item);
+        _items.Remove(item);
 
         RecalculateTotals();
     }
@@ -116,7 +118,7 @@ public class Order : AggregateRoot<OrderId>
         if (quantity <= 0)
             throw new DomainException(
                 "Quantity must be greater than zero.");
-
+    
         var item = Items.FirstOrDefault(
             x => x.ProductId == productId);
 
@@ -192,14 +194,15 @@ public class Order : AggregateRoot<OrderId>
     {
         if (Status is
             OrderStatus.Shipped or
-            OrderStatus.Delivered)
+            OrderStatus.Delivered or OrderStatus.Cancelled)
         {
             throw new DomainException(
                 "This order cannot be cancelled.");
         }
 
         Status = OrderStatus.Cancelled;
-        UpdatedAt = DateTime.UtcNow;
+       CancelledAt = DateTime.UtcNow;
+        
     }
     public void MarkAsDelivered()
     {

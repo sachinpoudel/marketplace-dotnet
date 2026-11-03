@@ -3,6 +3,7 @@ using MarketPlace.Application.Common.Interfaces.Auth;
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Features.Reviews.Dtos;
 using MarketPlace.Domain.Common.BaseErrors.Errors;
+using MarketPlace.Domain.Common.Interfaces;
 using MarketPlace.Domain.Common.ResultPattern;
 using MarketPlace.Domain.Products.ValueObjects;
 using MarketPlace.Domain.Reviews.Entities;
@@ -16,6 +17,7 @@ public class CreateReviewCommandHandler(
     IUnitOfWork unitOfWork,
     IReviewRepository reviewRepository,
     ILogger<CreateReviewCommandHandler> logger,
+    IPurchaseVerification purchaseVerification,
     ICurrentUser currentUser
 ) : IRequestHandler<CreateReviewcommand, Result<ReviewDetailDto>>
 {
@@ -27,7 +29,13 @@ public class CreateReviewCommandHandler(
         var reviewId = ReviewId.Create();
         var productId = ProductId.Create(request.ProductId);
         var userId = currentUser.GetCurrentUserId();
+    
+    var hasPurchased = await purchaseVerification.HasUserPurchasedProductAsync(userId, request.ProductId, cancellationToken);
 
+if(!hasPurchased)
+        {
+            return Result<ReviewDetailDto>.Failure(ReviewError.UserHasNotPurchasedProduct());
+        }
         var review = Review.Create(
             reviewId,
             userId,

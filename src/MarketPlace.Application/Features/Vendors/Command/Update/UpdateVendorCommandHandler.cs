@@ -22,7 +22,7 @@ public class UpdateVendorCommandHandler(
     )
     {
         var currentUserId = currentUser.GetCurrentUserId();
-        if (currentUserId == null)
+        if (currentUserId == Guid.Empty)
         {
             return Result<VendorDetailDto>.Failure(UserError.UserNotAuthenticated());
         }

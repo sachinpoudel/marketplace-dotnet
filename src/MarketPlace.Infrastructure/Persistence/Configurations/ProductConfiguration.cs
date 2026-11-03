@@ -104,6 +104,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 )
             );
 
-        builder.Ignore(p => p.CategoryIds);
+        // builder.Ignore(p => p.CategoryIds);
     }
 }

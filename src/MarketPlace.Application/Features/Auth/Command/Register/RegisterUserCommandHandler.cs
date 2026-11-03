@@ -26,9 +26,9 @@ public class RegisterUserHandler(IAuthService authService, ILogger<RegisterUserH
       {
         return Result<AuthSessionData>.Success(result.Value);
       }
-      else
-      {
-        return Result<AuthSessionData>.Failure(UserError.UserCreationFailed());
-      }
+      
+      
+        return Result<AuthSessionData>.Failure(result.Error);
+      
     }
 }

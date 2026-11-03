@@ -1,3 +1,4 @@
+using MaketPlace.Application.Features.Auth.Dtos;
 using MarketPlace.Application.Features.Auth.Command.Login;
 using MarketPlace.Application.Features.Auth.Command.RefreshToken;
 using MarketPlace.Application.Features.Auth.Command.Register;
@@ -17,8 +18,11 @@ public class AuthController(ILogger<AuthController> _logger, IMediator _mediator
         CancellationToken cancellationToken
     )
     {
-        var result = await _mediator.Send(request, cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+       return await _mediator.Send(request, cancellationToken).MatchAsync<AuthSessionData, IActionResult>(
+            onSuccess => Ok(onSuccess),
+            onFailure => Problem(onFailure.Message)
+        );
+        // return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
     }
 
     [HttpPost("login")]

@@ -51,4 +51,11 @@ public static class ProductError
             $"The product with ID {productId} is unavailable to fulfill the order."
         );
     }
+    public static BaseError ProductNotOwnedByUser()
+    {
+        return BaseError.Unauthorized(
+            "Product not owned by user.",
+            "The product is not owned by the current user."
+        );
+    }
 }
