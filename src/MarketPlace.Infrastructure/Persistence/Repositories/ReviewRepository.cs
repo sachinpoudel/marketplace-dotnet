@@ -36,6 +36,11 @@ return reviews.Entity;
          return await context.Reviews.Where(r => r.ProductId == productId && !r.IsDeleted).ToListAsync();
     }
 
+    public Task<bool> HasUserReviewedProductAsync(Guid userId, Guid productId, CancellationToken cancellationToken = default)
+    {
+        return context.Reviews.AnyAsync(r => r.UserId == userId && r.ProductId == ProductId.Create(productId) && !r.IsDeleted, cancellationToken); 
+    }
+
     public async Task UpdateReviewAsync(Review review)
     {
          context.Reviews.Update(review);

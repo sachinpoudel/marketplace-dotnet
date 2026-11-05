@@ -1,14 +1,14 @@
 
 namespace MarketPlace.Domain.Common.Entities;
 
-public abstract class Entity<TId> : IEquatable<Entity<TId>>, IAggregateRoot
+public abstract class Entity<TId> : IEquatable<Entity<TId>>
     where TId : notnull
 {
-    private readonly List<IDomainEvent> _domainEvents = new();
+    // private readonly List<IDomainEvent> _domainEvents = new();
 
     public TId Id { get; protected set; } = default!;
 
-    public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+    // public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
     protected Entity(TId id)
     {
@@ -18,15 +18,15 @@ public abstract class Entity<TId> : IEquatable<Entity<TId>>, IAggregateRoot
    
     protected Entity() { }
 
-    public void AddDomainEvent(IDomainEvent domainEvent)
-    {
-        _domainEvents.Add(domainEvent);
-    }
+    // public void AddDomainEvent(IDomainEvent domainEvent)
+    // {
+    //     _domainEvents.Add(domainEvent);
+    // }
 
-    public void ClearDomainEvents()
-    {
-        _domainEvents.Clear();
-    }
+    // public void ClearDomainEvents()
+    // {
+    //     _domainEvents.Clear();
+    // }
 
     public override bool Equals(object? obj)
     {

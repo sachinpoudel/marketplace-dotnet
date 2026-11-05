@@ -58,4 +58,11 @@ public static class ProductError
             "The product is not owned by the current user."
         );
     }
+    public static BaseError ProductStockReleaseFailed()
+    {
+        return BaseError.InternalServerError(
+            "Product stock release failed.",
+            "The product stock could not be released due to an internal error."
+        );
+    }
 }

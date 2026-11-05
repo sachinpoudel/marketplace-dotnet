@@ -12,4 +12,12 @@ public static class OrderError
     {
         return BaseError.Conflict("Order Cancelled", "The order you are trying to pay for has been cancelled.");
     }
+    public static BaseError OrderAlreadyPaid()
+    {
+        return BaseError.Conflict("Order Already Paid", "The order you are trying to pay for has already been paid.");
+    }
+    public static BaseError InvalidReservation()
+    {
+        return BaseError.Conflict("Invalid Reservation", "The order reservation is not active and cannot be consumed or released.");
+    }   
 }

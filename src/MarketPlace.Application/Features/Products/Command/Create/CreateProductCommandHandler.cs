@@ -77,8 +77,8 @@ public class CreateProductCommandHandler
         if (activeVendor is null)
             return Result<ProductsListItemDto>.Failure(VendorError.VendorNotFoundOrInactive());
 
-        // if (vendor.UserId != currentUserId)
-        //     return Result<ProductsListItemDto>.Failure(VendorError.VendorNotOwnedByUser());
+        if (vendor.UserId != currentUserId)
+             return Result<ProductsListItemDto>.Failure(VendorError.VendorNotOwnedByUser());
 
         var images =
             request
@@ -111,7 +111,7 @@ public class CreateProductCommandHandler
 
         var product = result.Value;
         await _productRepository.AddAsync(product, cancellationToken);
-        product.Publish(); // this will trigger domain events if any, and can be handled by event handlers
+        product.Publish(); // Publish the product after adding it to the repository
         await _unitOfWork.CommitAsync(cancellationToken);
 
         _logger.LogInformation("Product created successfully with Id: {ProductId}", product.Id);

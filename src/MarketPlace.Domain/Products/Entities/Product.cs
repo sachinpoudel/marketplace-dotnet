@@ -24,6 +24,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
     public string Description { get; private set; } = default!;
     public decimal Price { get; private set; }
     public int StockQuantity { get; private set; }
+    public int ReservedStockQuantity { get; private set; }
     public string Sku { get; private set; } = default!;
     public ProductStatus Status { get; private set; }
 
@@ -36,6 +37,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
     public DateTime UpdatedAt { get; private set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedOnUtc { get; set; }
+    public int AvailableQuantity => StockQuantity - ReservedStockQuantity;
 
     private Product(
         ProductId id,
@@ -103,7 +105,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
         {
             product.AddCategory(categoryId);
         }
-        product.AddDomainEvent(new ProductCreatedEvent(product.Id, vendorId));
+        product.RaiseDomainEvent(new ProductCreatedEvent(product.Id, vendorId));
         return product;
     }
 
@@ -126,7 +128,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
 
         if (price < 0)
             throw new DomainException("Product price cannot be negative.");
-if(stockQuantity < 0)
+        if (stockQuantity < 0)
             throw new DomainException("Stock quantity cannot be negative.");
         Name = name;
         Description = description;
@@ -152,7 +154,42 @@ if(stockQuantity < 0)
         UpdatedAt = DateTime.UtcNow;
 
         if (StockQuantity == 0)
-            AddDomainEvent(new ProductOutOfStockEvent(Id));
+            RaiseDomainEvent(new ProductOutOfStockEvent(Id, VendorId));
+    }
+
+    public void ReserveStock(int quantity)
+    {
+        if (quantity <= 0)
+            throw new DomainException("Quantity to reserve must be greater than zero.");
+
+        if (StockQuantity < quantity)
+            throw new DomainException("Not enough stock to reserve the specified quantity.");
+
+        // StockQuantity -= quantity;
+        ReservedStockQuantity += quantity;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public Result CommitReservedStock(int quantity) // This method is used to commit the reserved stock after a successful order placement
+    {
+        if (quantity <= 0 && quantity > ReservedStockQuantity)
+            throw new DomainException("Invalid reservation commit.");
+
+        StockQuantity -= quantity;
+        ReservedStockQuantity -= quantity;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public Result ReleaseReservedStock(int quantity)
+    {
+        if (quantity <= 0 || ReservedStockQuantity < quantity)
+            throw new DomainException("Invalid reservation.");
+
+        ReservedStockQuantity -= quantity;
+        StockQuantity += quantity;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
     }
 
     public void ReduceStock(int quantity)
@@ -167,7 +204,7 @@ if(stockQuantity < 0)
         UpdatedAt = DateTime.UtcNow;
 
         if (StockQuantity == 0)
-            AddDomainEvent(new ProductOutOfStockEvent(Id));
+            RaiseDomainEvent(new ProductOutOfStockEvent(Id, VendorId));
     }
 
     public void IncreaseStock(int quantity)
@@ -192,7 +229,7 @@ if(stockQuantity < 0)
         IsDeleted = true;
         DeletedOnUtc = DateTime.UtcNow;
 
-        AddDomainEvent(new ProductDeletedEvent(Id));
+        RaiseDomainEvent(new ProductDeletedEvent(Id));
     }
 
     public void Publish()

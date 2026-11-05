@@ -17,8 +17,8 @@ public class CreateReviewCommandHandler(
     IUnitOfWork unitOfWork,
     IReviewRepository reviewRepository,
     ILogger<CreateReviewCommandHandler> logger,
-    IPurchaseVerification purchaseVerification,
-    ICurrentUser currentUser
+    ICurrentUser currentUser,
+    IOrderRepository orderRepository
 ) : IRequestHandler<CreateReviewcommand, Result<ReviewDetailDto>>
 {
     public async Task<Result<ReviewDetailDto>> Handle(
@@ -30,11 +30,16 @@ public class CreateReviewCommandHandler(
         var productId = ProductId.Create(request.ProductId);
         var userId = currentUser.GetCurrentUserId();
     
-    var hasPurchased = await purchaseVerification.HasUserPurchasedProductAsync(userId, request.ProductId, cancellationToken);
+    var hasPurchased = await orderRepository.HasUserPurchasedProductAsync(userId, request.ProductId, cancellationToken);
 
 if(!hasPurchased)
         {
             return Result<ReviewDetailDto>.Failure(ReviewError.UserHasNotPurchasedProduct());
+        }
+        var alreadyReviewed = await reviewRepository.HasUserReviewedProductAsync(userId, request.ProductId, cancellationToken);
+        if (alreadyReviewed)
+        {
+            return Result<ReviewDetailDto>.Failure(ReviewError.UserHasAlreadyReviewedProduct());
         }
         var review = Review.Create(
             reviewId,

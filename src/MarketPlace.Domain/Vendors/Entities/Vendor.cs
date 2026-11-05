@@ -82,7 +82,7 @@ public sealed class Vendor : AggregateRoot<VendorId>
             contactEmail
         );
 
-        vendor.AddDomainEvent(new VendorRegisteredEvent(vendor.Id));
+        vendor.RaiseDomainEvent(new VendorRegisteredEvent(vendor.Id));
         return Result<Vendor>.Success(vendor);
     }
 
@@ -144,7 +144,16 @@ public sealed class Vendor : AggregateRoot<VendorId>
     {
         Status = VendorStatus.Inactive;
         UpdatedAt = DateTime.UtcNow;
-        AddDomainEvent(new VendorDelistedEvent(Id));
+        RaiseDomainEvent(new VendorDelistedEvent(Id));
         return Result.Success();
+    }
+
+    public void HandleOutOfStock(ProductId productId)
+    {
+        var product = Products.FirstOrDefault(p => p.Id == productId);
+        if (product is null)
+            throw new DomainException("Product not found for this vendor.");
+
+            product.Delist();
     }
 }

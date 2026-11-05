@@ -2,6 +2,7 @@ using System;
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Domain.Orders.Entities;
 using MarketPlace.Domain.Orders.ValueObjects;
+using MarketPlace.Domain.Products.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace MarketPlace.Infrastructure.Persistence.Repositories;
@@ -25,4 +26,17 @@ public class OrderRepository(ApplicationDbContext context) : IOrderRepository
     {
         return context.Orders.AsQueryable();
     }
+    public async Task<bool> HasUserPurchasedProductAsync(Guid userId, Guid productId, CancellationToken cancellationToken = default)
+    {
+        return await context.Orders.AnyAsync(o => o.UserId == userId && o.Status == Domain.Orders.Enums.OrderStatus.Delivered && o.Items.Any(i => i.ProductId == ProductId.Create(productId)), cancellationToken);
+    }
+
+    public async Task<IEnumerable<Order>> GetExpiredReservationsAsync(DateTime expirationTime, CancellationToken cancellationToken = default)
+    {
+  return await context.Orders
+        .Include(o => o.Items)
+        .Where(o =>
+            o.ReservationStatus == Domain.Orders.Enums.OrderReservationStatus.Active &&
+            o.ReservationExpiresAt <= expirationTime).Take(50).AsSplitQuery()
+        .ToListAsync(cancellationToken);    }
 }

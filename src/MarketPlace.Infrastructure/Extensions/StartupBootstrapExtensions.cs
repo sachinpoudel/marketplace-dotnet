@@ -12,7 +12,7 @@ public static class StartupBootstrapExtensions
         using var scope = services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.Database.MigrateAsync();
+        await dbContext.Database.MigrateAsync(); // this call will apply any pending migrations for the context to the database. Will create the database if it does not already exist.
     }
 
     public static async Task SeedIdentityRolesAsync(this IServiceProvider services)

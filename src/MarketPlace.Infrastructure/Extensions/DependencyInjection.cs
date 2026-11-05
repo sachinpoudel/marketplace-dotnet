@@ -3,6 +3,7 @@ using MaketPlace.Application.Common.Interfaces.UnitOfWork;
 using MarketPlace.Application.Common.Interfaces.Auth;
 using MarketPlace.Application.Common.Interfaces.Query;
 using MarketPlace.Application.Common.Interfaces.Repositories;
+using MarketPlace.Infrastructure.BackgroundJobs;
 using MarketPlace.Infrastructure.Extensions;
 using MarketPlace.Infrastructure.Identity.Models;
 using MarketPlace.Infrastructure.Identity.Services;
@@ -50,6 +51,7 @@ services.AddJwt();
 
 
 
+services.AddHostedService<ExpiredReservationWorker>();
 
 
         

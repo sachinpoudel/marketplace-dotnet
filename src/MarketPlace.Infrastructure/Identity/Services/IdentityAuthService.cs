@@ -57,7 +57,7 @@ public class IdentityAuthService(
                 || string.IsNullOrEmpty(token.RefreshToken)
             )
             {
-                return Result<AuthSessionData>.Success(token);
+                return Result<AuthSessionData>.Failure(UserError.SessionCreationFailed());
             }
             return new AuthSessionData(
                 user.Id,
@@ -135,7 +135,7 @@ public class IdentityAuthService(
         }
 
         var roles = await _userManager.GetRolesAsync(user);
-        var newRefreshToken = _jwtService.CreateRefreshToken();
+        var newRefreshToken = _jwtService.CreateRefreshToken(); 
         var newRefreshTokenHash = _jwtService.HashToken(newRefreshToken);
         var expiresAtUtc = DateTime.UtcNow.AddDays(_jwtOptions.Value.RefreshTokenDays);
 
@@ -199,18 +199,18 @@ public class IdentityAuthService(
         throw new NotImplementedException();
     }
 
-    Task<bool> IAuthService.IsInRoleAsync(
+    async Task<bool>  IAuthService.IsInRoleAsync(
         Guid userId,
         string roleName,
         CancellationToken cancellationToken
     )
     {
-        var user = _userManager.FindByIdAsync(userId.ToString());
+        var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
         {
             throw new Exception("User not found.");
         }
-        var isInRole = _userManager.IsInRoleAsync(user.Result, roleName);
+        var isInRole = await _userManager.IsInRoleAsync(user, roleName);
         return isInRole;
     }
     

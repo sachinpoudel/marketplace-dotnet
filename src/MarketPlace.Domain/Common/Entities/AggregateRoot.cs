@@ -6,7 +6,7 @@ namespace MarketPlace.Domain.Common.Entities;
 /// Child entities inside the aggregate (OrderItem, CartItem, Inventory) just
 /// inherit Entity&lt;TId&gt; directly, not this.
 /// </summary>
-public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot
+public abstract class AggregateRoot<TId> : Entity<TId>
     where TId : notnull
 {
 
@@ -20,5 +20,5 @@ public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot
     protected AggregateRoot() { }
     
     protected void RaiseDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
-       public void ClearDomainEvents() => _domainEvents.Clear();
+        public void ClearDomainEvents() => _domainEvents.Clear();
 }

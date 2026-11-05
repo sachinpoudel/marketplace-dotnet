@@ -70,9 +70,9 @@ public class Payment : AggregateRoot<PaymentId>
         Status = PaymentStatus.Completed;
         TransactionId = $"MOCK-{Guid.NewGuid()}";
         PaidAt = DateTime.UtcNow;
-        AddDomainEvent(
-            new PaymentPaidEvent(Id.Value, OrderId.Value, Amount, TransactionId!, PaidAt)
-        );
+      RaiseDomainEvent(
+        new PaymentPaidEvent(Id, OrderId, Amount, TransactionId!, PaidAt)
+    );
     }
 
     public void MarkAsFailed()

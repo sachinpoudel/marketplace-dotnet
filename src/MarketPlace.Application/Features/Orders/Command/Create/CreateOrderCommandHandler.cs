@@ -53,6 +53,8 @@ public class CreateOrderCommandHandler(
         {
             return Result<OrderDetailDto>.Failure(ProductError.ProductNotFound());
         }
+
+     
         var shippingAddress = ShippingAddress.Create(
             request.FullName,
             request.AddressLine1,
@@ -70,16 +72,13 @@ public class CreateOrderCommandHandler(
                 return Result<OrderDetailDto>.Failure(ProductError.ProductNotFound());
             }
             var status = product.Status;
-            Console.WriteLine($"Product {product.Id.Value} status: {status}"); // Debugging line
             if (status != Domain.Products.Enums.ProductStatus.Available && status != Domain.Products.Enums.ProductStatus.Active)
             {
-                Console.WriteLine($"Product {product.Id.Value} is not available or active. Status: {status}"); // Debugging line
                 return Result<OrderDetailDto>.Failure(
                     ProductError.ProductUnavailable(product.Id.Value)
                 );
             }
             var stock = product?.StockQuantity ?? 0;
-            Console.WriteLine($"Product {product.Id.Value} stock: {stock}, requested quantity: {cartitem.Quantity}"); // Debugging line
             if (cartitem.Quantity > stock)
             {
                 return Result<OrderDetailDto>.Failure(
@@ -94,7 +93,8 @@ public class CreateOrderCommandHandler(
                 product.Price,
                 product.VendorId
             );
-            product.ReduceStock(cartitem.Quantity);
+            // product.ReduceStock(cartitem.Quantity)
+            product.ReserveStock(cartitem.Quantity);
         }
         await orderRepository.AddAsync(order, cancellationToken);
         await cartRepository.ClearCartAsync(cart.Id, cancellationToken);

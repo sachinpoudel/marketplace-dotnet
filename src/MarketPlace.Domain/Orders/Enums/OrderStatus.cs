@@ -8,5 +8,6 @@ public enum OrderStatus
     Delivered = 4,
     Cancelled = 5,
     Confirmed = 6,
+    Reserved = 7
  
 }

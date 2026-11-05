@@ -110,11 +110,20 @@ namespace MarketPlace.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("ReservationExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ReservationStatus")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("ShippingCost")
                         .HasColumnType("numeric");
@@ -134,7 +143,17 @@ namespace MarketPlace.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ReservationExpiresAt");
+
+                    b.HasIndex("ReservationStatus");
 
                     b.HasIndex("UserId");
 
@@ -213,6 +232,10 @@ namespace MarketPlace.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("CategoryIds")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -239,6 +262,9 @@ namespace MarketPlace.Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("ReservedStockQuantity")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Sku")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -255,6 +281,12 @@ namespace MarketPlace.Infrastructure.Migrations
 
                     b.Property<Guid>("VendorId")
                         .HasColumnType("uuid");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("Id");
 

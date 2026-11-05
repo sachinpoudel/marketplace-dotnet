@@ -11,4 +11,5 @@ public interface IReviewRepository
     Task<IEnumerable<Review>> GetReviewsByProductIdAsync(ProductId productId);
     Task<Review> AddReviewAsync(Review review);
     Task UpdateReviewAsync(Review review);
+    Task<bool> HasUserReviewedProductAsync(Guid userId, Guid productId, CancellationToken cancellationToken = default);
 }

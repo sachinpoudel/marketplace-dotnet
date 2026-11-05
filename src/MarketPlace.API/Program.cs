@@ -1,6 +1,7 @@
 using MarketPlace.Api.Extensions;
 using MarketPlace.Application.Extensions;
 using MarketPlace.Infrastructure;
+using MarketPlace.Infrastructure.BackgroundJobs;
 using MarketPlace.Infrastructure.Extensions;
 using MarketPlace.Infrastructure.Identity.Services;
 using Serilog;
@@ -11,6 +12,7 @@ try
 {
     Log.Information("Starting web host");
     var builder = WebApplication.CreateBuilder(args);
+
 
     builder.Services.AddInfrastructure();
     builder.Services.AddDatabase();
