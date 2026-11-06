@@ -3,6 +3,7 @@ using MaketPlace.Application.Common.Interfaces.UnitOfWork;
 using MarketPlace.Application.Common.Interfaces.Auth;
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Features.Orders.Dtos;
+using MarketPlace.Domain.Carts;
 using MarketPlace.Domain.Common.BaseErrors.Errors;
 using MarketPlace.Domain.Common.ResultPattern;
 using MarketPlace.Domain.Orders.Entities;
@@ -33,7 +34,7 @@ public class CreateOrderCommandHandler(
 
         var cart =
             request.CartId != Guid.Empty
-                ? await cartRepository.GetCartByIdAsync(request.CartId, cancellationToken)
+                ? await cartRepository.GetCartByIdAsync(CartId.Create(request.CartId), cancellationToken)
                 : await cartRepository.GetCartByUserIdAsync(currentUserId, cancellationToken);
 
         if (cart == null || cart.UserId != currentUserId)
@@ -97,7 +98,7 @@ public class CreateOrderCommandHandler(
             product.ReserveStock(cartitem.Quantity);
         }
         await orderRepository.AddAsync(order, cancellationToken);
-        await cartRepository.ClearCartAsync(cart.Id, cancellationToken);
+        // await cartRepository.ClearCartAsync(cart.Id, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
 
         return Result<OrderDetailDto>.Success(
@@ -113,6 +114,8 @@ public class CreateOrderCommandHandler(
                     order.ShippingAddress.PhoneNumber
                 ),
                 order.Status.ToString(),
+                order.ReservationStatus.ToString(),
+                order.ReservationExpiresAt,
                 order
                     .Items.Select(i => new OrderItemDto(
                         i.Id.Value,

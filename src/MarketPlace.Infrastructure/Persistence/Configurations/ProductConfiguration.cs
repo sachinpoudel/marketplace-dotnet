@@ -31,6 +31,10 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 tagBuilder.Property(t => t.Name).HasMaxLength(50);
                 tagBuilder.Property(t => t.Slug).HasMaxLength(50);
             }
+//             OwnsMany() means:
+// - A Product can own multiple Tags.
+// - Tags belong to the Product's lifecycle.
+// - Tags aren't independently managed aggregate roots.
         );
 
         builder.Property(p => p.Name).IsRequired().HasMaxLength(100);
@@ -43,13 +47,12 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.CreatedAt).IsRequired();
         builder.Property(p => p.UpdatedAt).IsRequired();
 
-builder.Property<uint>("xmin")
-    .IsRowVersion(); //this line will create a shadow property called "xmin" that will be used for optimistic concurrency control. The IsRowVersion() method tells EF Core to treat this property as a row version, which means that it will automatically be updated by the database whenever the row is updated. This allows EF Core to detect when a row has been modified by another user and throw a DbUpdateConcurrencyException if a conflict occurs.
+        builder.Property<uint>("xmin").IsRowVersion(); //this line will create a shadow property called "xmin" that will be used for optimistic concurrency control. The IsRowVersion() method tells EF Core to treat this property as a row version, which means that it will automatically be updated by the database whenever the row is updated. This allows EF Core to detect when a row has been modified by another user and throw a DbUpdateConcurrencyException if a conflict occurs.
         builder
-            .Property(p => p.Images)
-            .HasField("_images")
-            .UsePropertyAccessMode(PropertyAccessMode.Field)
-            .HasConversion(
+            .Property(p => p.Images) // this line tells EF Core that we want to configure the Images property of the Product entity.
+            .HasField("_images")// this line tells EF Core that the Images property is backed by a private field called _images. This means that EF Core will use the _images field to store the value of the Images property in the database, rather than using a separate column for each image.
+            .UsePropertyAccessMode(PropertyAccessMode.Field).HasColumnType("jsonb") // this line tells EF Core to use the field access mode when reading and writing the Images property. This means that EF Core will bypass the property getter and setter and access the _images field directly. This is necessary because the Images property is read-only and does not have a public setter.
+            .HasConversion( // converts the Images property to and from a JSON string for storage in the database. The HasConversion method takes two parameters: a function that converts the property value to a database value, and a function that converts the database value back to a property value.
                 images =>
                     JsonSerializer.Serialize(
                         images.Select(i => i.Url),
@@ -61,7 +64,7 @@ builder.Property<uint>("xmin")
                         .Select(url => Img.Create(url))
                         .ToList()
             )
-            .Metadata.SetValueComparer(
+            .Metadata.SetValueComparer( // this line tells EF Core to use a custom value comparer for the Images property. The ValueComparer class is used to compare two values of a given type for equality. In this case, we are comparing two IReadOnlyCollection<Img> values for equality by comparing their Url properties. The ValueComparer class takes three parameters: a function that compares two values for equality, a function that computes a hash code for a value, and a function that creates a copy of a value.
                 new ValueComparer<IReadOnlyCollection<Img>>(
                     (a, b) => a!.Select(i => i.Url).SequenceEqual(b!.Select(i => i.Url)),
                     c => c.Aggregate(0, (hash, i) => HashCode.Combine(hash, i.Url.GetHashCode())),
@@ -81,7 +84,7 @@ builder.Property<uint>("xmin")
         builder
             .Property(p => p.CategoryIds)
             .HasField("_categoryIds")
-            .UsePropertyAccessMode(PropertyAccessMode.Field)
+            .UsePropertyAccessMode(PropertyAccessMode.Field).HasColumnType("jsonb")
             .HasConversion(
                 categoryIds =>
                     JsonSerializer.Serialize(
@@ -106,6 +109,10 @@ builder.Property<uint>("xmin")
                 )
             );
 
-        // builder.Ignore(p => p.CategoryIds);
-    }
+        // builder.Ignore(p => p.CategoryIds); ignore means This means EF Core:
+// - Does not create a database column for that property through this entity mapping.
+// - Does not load its value from the database.
+// - Does not save its value to the database.
+// - Does not track changes to it as a mapped proper
+     }
 }

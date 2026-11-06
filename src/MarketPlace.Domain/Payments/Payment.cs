@@ -26,7 +26,6 @@ public class Payment : AggregateRoot<PaymentId>
         decimal amount,
         PaymentStatus status,
         PaymentMethod method,
-        DateTime paidAt,
         DateTime createdAt
     )
         : base(id)
@@ -37,17 +36,10 @@ public class Payment : AggregateRoot<PaymentId>
         Amount = amount;
         Status = status;
         Method = method;
-        PaidAt = paidAt;
         CreatedAt = createdAt;
     }
 
-    public static Payment Create(
-        OrderId orderId,
-        Guid userId,
-        decimal amount,
-        PaymentMethod method,
-        DateTime paidAt
-    )
+    public static Payment Create(OrderId orderId, Guid userId, decimal amount, PaymentMethod method)
     {
         return new Payment(
             PaymentId.Create(),
@@ -56,7 +48,6 @@ public class Payment : AggregateRoot<PaymentId>
             amount,
             PaymentStatus.Pending,
             method,
-            paidAt,
             DateTime.UtcNow
         );
     }
@@ -70,9 +61,7 @@ public class Payment : AggregateRoot<PaymentId>
         Status = PaymentStatus.Completed;
         TransactionId = $"MOCK-{Guid.NewGuid()}";
         PaidAt = DateTime.UtcNow;
-      RaiseDomainEvent(
-        new PaymentPaidEvent(Id, OrderId, Amount, TransactionId!, PaidAt)
-    );
+        RaiseDomainEvent(new PaymentPaidEvent(Id, OrderId, Amount, TransactionId!, PaidAt));
     }
 
     public void MarkAsFailed()

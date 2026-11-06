@@ -33,7 +33,7 @@ public class Order : AggregateRoot<OrderId>
 
     public void CalculateSubTotal()
     {
-        SubTotal = Items.Sum(item => item.SubTotal);
+        SubTotal = _items.Sum(item => item.SubTotal);
         TotalAmount = SubTotal + ShippingCost - DiscountAmount;
     }
 
@@ -74,7 +74,7 @@ public class Order : AggregateRoot<OrderId>
         if (Status != OrderStatus.Pending)
             throw new DomainException("Items cannot be added to this order.");
 
-        var existingItem = Items.FirstOrDefault(x => x.ProductId == productId);
+        var existingItem = _items.FirstOrDefault(x => x.ProductId == productId);
 
         if (existingItem is not null)
         {
@@ -91,7 +91,7 @@ public class Order : AggregateRoot<OrderId>
     {
         EnsurePending();
 
-        var item = Items.FirstOrDefault(x => x.ProductId == productId);
+        var item = _items.FirstOrDefault(x => x.ProductId == productId);
 
         if (item is null)
             throw new DomainException("Item not found.");
@@ -103,7 +103,7 @@ public class Order : AggregateRoot<OrderId>
 
     public void RecalculateTotals()
     {
-        SubTotal = Items.Sum(item => item.SubTotal);
+        SubTotal = _items.Sum(item => item.SubTotal);
         TotalAmount = SubTotal + ShippingCost - DiscountAmount;
     }
 
@@ -120,7 +120,7 @@ public class Order : AggregateRoot<OrderId>
         if (quantity <= 0)
             throw new DomainException("Quantity must be greater than zero.");
 
-        var item = Items.FirstOrDefault(x => x.ProductId == productId);
+        var item = _items.FirstOrDefault(x => x.ProductId == productId);
 
         if (item is null)
             throw new DomainException("Item not found.");
@@ -162,7 +162,7 @@ public class Order : AggregateRoot<OrderId>
         if (Status != OrderStatus.Pending)
             throw new DomainException("Only pending orders can be confirmed.");
 
-        if (Items.Count == 0)
+        if (_items.Count == 0)
             throw new DomainException("Cannot confirm an empty order.");
 
         Status = OrderStatus.Confirmed;

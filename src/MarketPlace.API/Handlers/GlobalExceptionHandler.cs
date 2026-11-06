@@ -27,7 +27,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         {
             Status = statusCode,
             Title = title,
-            Detail = userFriendlyDetail,
+            Detail = exception.Message,
             Type = GetProblemType(statusCode),
         };
 

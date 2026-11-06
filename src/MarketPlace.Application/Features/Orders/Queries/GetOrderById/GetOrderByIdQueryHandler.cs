@@ -42,6 +42,8 @@ public class GetOrderByIdQueryHandler(ICurrentUser currentUser, IOrderRepository
                     order.ShippingAddress.PhoneNumber
                 ),
                 order.Status.ToString(),
+                order.ReservationStatus.ToString(),
+                order.ReservationExpiresAt,
                 order
                     .Items.Select(i => new OrderItemDto(
                         i.Id.Value,

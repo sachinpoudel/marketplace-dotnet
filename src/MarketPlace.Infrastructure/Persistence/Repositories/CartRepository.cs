@@ -29,16 +29,16 @@ public sealed class CartRepository(ApplicationDbContext context) : ICartReposito
     }
 
     public async Task<Cart?> GetCartByIdAsync(
-        Guid cartId,
+        CartId cartId,
         CancellationToken cancellationToken = default
     )
     {
-        var cartIdValue = CartId.Create(cartId);
 
         return await context
             .Carts.Include(c => c.Items)
-            .FirstOrDefaultAsync(c => c.Id == cartIdValue, cancellationToken);
+            .FirstOrDefaultAsync(c => c.Id == cartId, cancellationToken);
     }
+
 
     public async Task<Cart?> GetCartByUserIdAsync(
         Guid userId,
@@ -52,6 +52,6 @@ public sealed class CartRepository(ApplicationDbContext context) : ICartReposito
 
     public async Task<Cart> UpdateAsync(Cart cart, CancellationToken cancellationToken = default)
     {
-        return context.Carts.Update(cart).Entity;
+        return context.Carts.Update(cart).Entity; // we are not awaiting here because we are not saving changes to the database yet, just updating the entity in the context
     }
 }

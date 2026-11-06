@@ -7,7 +7,8 @@ namespace MarketPlace.Domain.Carts.Entities;
 public class Cart : AggregateRoot<CartId>
 {
     public Guid UserId { get; private set; }
-    public ICollection<CartItem> Items { get; private set; } = new List<CartItem>();
+    public ICollection<CartItem> Items => _items.AsReadOnly();
+    private readonly List<CartItem> _items = new();
 
     private Cart(CartId id, Guid userId)
         : base(id)
@@ -23,7 +24,7 @@ public class Cart : AggregateRoot<CartId>
 
     public void AddItem(ProductId productId, int quantity, decimal priceAtTheTimeOfAdding)
     {
-        var existingItem = Items.FirstOrDefault(i => i.ProductId.Equals(productId));
+        var existingItem = _items.FirstOrDefault(i => i.ProductId.Equals(productId));
         if (existingItem != null)
         {
             existingItem.UpdateQuantity(existingItem.Quantity + quantity);
@@ -31,22 +32,25 @@ public class Cart : AggregateRoot<CartId>
         }
 
         // If no existing item is found, create a new one
-        Items.Add(CartItem.Create(productId, quantity, priceAtTheTimeOfAdding)); // Assuming you have a way to get the price
+        _items.Add(CartItem.Create(productId, quantity, priceAtTheTimeOfAdding)); // Assuming you have a way to get the price
     }
 
-    public int CalculateTotalQuantity() => Items.Sum(item => item.Quantity);
+    public int CalculateTotalQuantity() => _items.Sum(item => item.Quantity);
 
     public decimal CalculateTotalPrice() =>
-        Items.Sum(item => item.Quantity * item.PriceAtTheTimeOfAdding);
+        _items.Sum(item => item.Quantity * item.PriceAtTheTimeOfAdding);
 
     public void RemoveItem(CartItemId cartItemId)
     {
-        Items.Remove(Items.FirstOrDefault(i => i.Id.Equals(cartItemId)));
+        _items.Remove(_items.FirstOrDefault(i => i.Id.Equals(cartItemId)));
     }
-
+    public void ClearCart()
+    {
+        _items.Clear();
+    }
     public void ChangeQuantity(ProductId productId, int newQuantity, int availableStock)
     {
-        var existingItem = Items.FirstOrDefault(i => i.ProductId.Equals(productId));
+        var existingItem = _items.FirstOrDefault(i => i.ProductId.Equals(productId));
         if (existingItem == null)
         {
             throw new InvalidOperationException("Item not found in the cart.");
@@ -70,7 +74,7 @@ public class Cart : AggregateRoot<CartId>
             var amountToRemove = oldQuantity - newQuantity;
             if (newQuantity <= 0)
             {
-                Items.Remove(existingItem); // Remove the item if the new quantity is zero or less
+                _items.Remove(existingItem); // Remove the item if the new quantity is zero or less
             }
             else
             {

@@ -15,7 +15,7 @@ namespace MarketPlace.Domain.Products.Entities;
 
 public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
 {
-    private List<CategoryId> _categoryIds = new();
+    private List<CategoryId> _categoryIds = new(); // 
     private List<Tag> _tags = new();
 
     private List<Img> _images = new();
@@ -187,7 +187,6 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
             throw new DomainException("Invalid reservation.");
 
         ReservedStockQuantity -= quantity;
-        StockQuantity += quantity;
         UpdatedAt = DateTime.UtcNow;
         return Result.Success();
     }

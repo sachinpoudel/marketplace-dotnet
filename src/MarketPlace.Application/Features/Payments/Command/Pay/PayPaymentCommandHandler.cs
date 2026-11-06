@@ -14,6 +14,7 @@ public class PayPaymentCommandHandler(
     ICurrentUser currentUser,
     IPaymentRepository paymentRepository,
     IUnitOfWork unitOfWork,
+    ICartRepository cartRepository,
     IOrderRepository orderRepository
 ) : IRequestHandler<PayPaymentCommand, Result<PayPaymentDto>>
 {
@@ -56,6 +57,13 @@ public class PayPaymentCommandHandler(
         {
             return Result<PayPaymentDto>.Failure(OrderError.OrderCancelled());
         }
+
+
+
+await unitOfWork.BeginTransactionAsync(cancellationToken); // this line will start a transaction, so if any of the following operations fail, we can rollback the transaction and not commit any changes to the database.
+payment.MarkAsPaid();
+
+await unitOfWork.CommitAsync(cancellationToken);
         payment.MarkAsPaid();
         await unitOfWork.CommitAsync(cancellationToken);
         return Result<PayPaymentDto>.Success(

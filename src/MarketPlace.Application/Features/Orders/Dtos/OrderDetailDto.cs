@@ -6,6 +6,8 @@ public record  OrderDetailDto
             Guid UserId,
             ShippingAddressDto ShippingAddress,
             string Status,
+            string ReservationStatus,
+            DateTime? ReservationExpirationDate,
             List<OrderItemDto> Items
 
 

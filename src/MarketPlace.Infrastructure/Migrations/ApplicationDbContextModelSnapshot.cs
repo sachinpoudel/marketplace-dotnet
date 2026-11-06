@@ -234,7 +234,7 @@ namespace MarketPlace.Infrastructure.Migrations
 
                     b.Property<string>("CategoryIds")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -249,7 +249,7 @@ namespace MarketPlace.Infrastructure.Migrations
 
                     b.Property<string>("Images")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");

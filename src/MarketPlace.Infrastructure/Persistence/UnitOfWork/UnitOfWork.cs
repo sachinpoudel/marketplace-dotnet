@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 public class UnitOfWork : IUnitOfWork, IDisposable
 {
     private readonly ApplicationDbContext _context;
-    private IDbContextTransaction _currentTransaction;
+    private IDbContextTransaction _currentTransaction; // this means that we can have only one transaction at a time
     private bool _disposed;
     private readonly IPublisher _publisher;
 
@@ -48,61 +48,70 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
     }
 
- public async Task CommitAsync(CancellationToken cancellationToken = default)
-{
-    var domainEvents = _context.ChangeTracker.Entries<IAggregateRoot>()
-        .Select(e => e.Entity)
-        .SelectMany(e => e.DomainEvents)
-        .ToList();
-
-    foreach (var aggregate in _context.ChangeTracker.Entries<IAggregateRoot>().Select(e => e.Entity))
+    public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
-        aggregate.ClearDomainEvents();
-    }
-
-    foreach (var domainEvent in domainEvents)
-    {
-        await _publisher.Publish(domainEvent, cancellationToken);
-    }
-    try
-    {
-        if (_currentTransaction != null)
+        try
         {
-            await _context.SaveChangesAsync(cancellationToken);
-            await _currentTransaction.CommitAsync(cancellationToken);
+            var domainEvents = _context
+                .ChangeTracker.Entries<IAggregateRoot>()
+                .Select(e => e.Entity)
+                .SelectMany(e => e.DomainEvents)
+                .ToList();
+            foreach (var domainEvent in domainEvents)
+            {
+                await _publisher.Publish(domainEvent, cancellationToken);
+            }
+            if (_currentTransaction != null) // if 
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+                await _currentTransaction.CommitAsync(cancellationToken);
+            }
+            else // IF 
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            foreach (
+                var aggregate in _context
+                    .ChangeTracker.Entries<IAggregateRoot>()
+                    .Select(e => e.Entity)
+            )
+            {
+                aggregate.ClearDomainEvents();
+            }
         }
-        else
+        catch
         {
-            await _context.SaveChangesAsync(cancellationToken);
+            if (_currentTransaction != null)
+            {
+                await RollbackAsync(cancellationToken);
+            }
+            throw;
         }
-        
-    }
-    catch
-    {
-        if (_currentTransaction != null)
+        finally
         {
-            await RollbackAsync(cancellationToken);
-        }
-        throw;
-    }
-    finally
-    {
-        await DisposeTransactionAsync();
-    }
-}
-
-
-    public async Task RollbackAsync(CancellationToken cancellationToken = default)
-    {
-        if (_currentTransaction != null)
-        {
-            await _currentTransaction.RollbackAsync(cancellationToken);
             await DisposeTransactionAsync();
         }
     }
 
-    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task RollbackAsync(CancellationToken cancellationToken = default)
     {
+        if (_currentTransaction is null)
+            return;
+
+        try
+        {
+            await _currentTransaction.RollbackAsync(CancellationToken.None);
+        }
+        finally
+        {
+            await DisposeTransactionAsync();
+        }
+    }
+
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default) // this method will be called before any operation that requires a transaction, like creating an order and payment
+    {
+        if (_currentTransaction is not null)
+            throw new InvalidOperationException("A transaction is already in progress.");
         _currentTransaction = await _context.Database.BeginTransactionAsync(cancellationToken);
     }
 
@@ -117,20 +126,11 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+        if (_disposed)
+            return;
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                _context.Dispose();
-                _currentTransaction?.Dispose();
-            }
-            _disposed = true;
-        }
+        _currentTransaction?.Dispose();
+        _currentTransaction = null;
+        _disposed = true;
     }
 }

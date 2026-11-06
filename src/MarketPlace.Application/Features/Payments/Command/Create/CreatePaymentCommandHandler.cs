@@ -49,8 +49,7 @@ public class CreatePaymentCommandHandler(
             order.Id,
             currentUserId,
             order.TotalAmount,
-            request.Method,
-            DateTime.UtcNow
+            request.Method
         );
 
         var paymentCreated = await paymentRepository.CreatePaymentAsync(payment, cancellationToken);
@@ -63,7 +62,7 @@ public class CreatePaymentCommandHandler(
                 paymentCreated.Amount,
                 paymentCreated.Status,
                 paymentCreated.Method,
-                paymentCreated.PaidAt,
+               
                 paymentCreated.CreatedAt
             )
         );
