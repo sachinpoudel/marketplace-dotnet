@@ -48,51 +48,62 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
     }
 
-    public async Task CommitAsync(CancellationToken cancellationToken = default)
+public async Task<int> CommitAsync(CancellationToken cancellationToken = default)
+{
+    int result = 0;
+
+    try
     {
-        try
+        while (true)
         {
-            var domainEvents = _context
-                .ChangeTracker.Entries<IAggregateRoot>()
+            var aggregatesWithEvents = _context.ChangeTracker
+                .Entries<IAggregateRoot>()
                 .Select(e => e.Entity)
+                .Where(e => e.DomainEvents.Any())
+                .ToList();
+
+            if (aggregatesWithEvents.Count == 0)
+            {
+                break;
+            }
+
+            var domainEvents = aggregatesWithEvents
                 .SelectMany(e => e.DomainEvents)
                 .ToList();
+
+            foreach (var aggregate in aggregatesWithEvents)
+            {
+                aggregate.ClearDomainEvents();
+            }
+
             foreach (var domainEvent in domainEvents)
             {
                 await _publisher.Publish(domainEvent, cancellationToken);
             }
-            if (_currentTransaction != null) // if 
-            {
-                await _context.SaveChangesAsync(cancellationToken);
-                await _currentTransaction.CommitAsync(cancellationToken);
-            }
-            else // IF 
-            {
-                await _context.SaveChangesAsync(cancellationToken);
-            }
-            foreach (
-                var aggregate in _context
-                    .ChangeTracker.Entries<IAggregateRoot>()
-                    .Select(e => e.Entity)
-            )
-            {
-                aggregate.ClearDomainEvents();
-            }
         }
-        catch
-        {
-            if (_currentTransaction != null)
-            {
-                await RollbackAsync(cancellationToken);
-            }
-            throw;
-        }
-        finally
-        {
-            await DisposeTransactionAsync();
-        }
-    }
 
+        result = await _context.SaveChangesAsync(cancellationToken);
+
+        if (_currentTransaction != null)
+        {
+            await _currentTransaction.CommitAsync(cancellationToken);
+        }
+
+        return result;
+    }
+    catch
+    {
+        if (_currentTransaction != null)
+        {
+            await RollbackAsync(cancellationToken);
+        }
+        throw;
+    }
+    finally
+    {
+        await DisposeTransactionAsync();
+    }
+}
     public async Task RollbackAsync(CancellationToken cancellationToken = default)
     {
         if (_currentTransaction is null)

@@ -20,4 +20,13 @@ public static class OrderError
     {
         return BaseError.Conflict("Invalid Reservation", "The order reservation is not active and cannot be consumed or released.");
     }   
+    public static BaseError OrderAlreadyCancelled()
+    {
+        return BaseError.Conflict("Order Already Cancelled", "The order you are trying to cancel has already been cancelled.");
+    }
+    public static BaseError OrderAlreadyShippedOrDelivered()
+    {
+        return BaseError.Conflict("Order Already Shipped or Delivered", "The order you are trying to cancel has already been shipped or delivered.");
+    }
+    
 }

@@ -12,7 +12,7 @@ public interface IUnitOfWork
     ICartRepository CartRepository { get; }
     IPaymentRepository PaymentRepository { get; }
     IReviewRepository ReviewRepository { get; }
-    Task CommitAsync(CancellationToken cancellationToken = default);
+    Task<int> CommitAsync(CancellationToken cancellationToken = default);
     Task RollbackAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     

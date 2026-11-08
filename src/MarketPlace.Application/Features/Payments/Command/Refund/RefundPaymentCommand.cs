@@ -6,6 +6,8 @@ namespace MarketPlace.Application.Features.Payments.Command.Refund;
 
 public record class RefundPaymentCommand
 (
-    Guid PaymentId
+    Guid OrderId,
+    Guid PaymentId,
+    bool IsManual = false
 
 ): IRequest<Result<RefundPaymentDto>>;

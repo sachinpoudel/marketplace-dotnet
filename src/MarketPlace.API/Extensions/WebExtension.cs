@@ -1,4 +1,5 @@
 using MarketPlace.API.Handlers;
+using MarketPlace.Infrastructure.ExternalServices.Payments.khalti;
 using MarketPlace.Infrastructure.Persistence.Options;
 using Serilog;
 
@@ -48,6 +49,9 @@ public static class WebExtension
             builder.Configuration.GetSection("ConnectionStrings")
         );
         builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
+        builder.Services.Configure<KhaltiSettings>(
+            builder.Configuration.GetSection("KhaltiSettings")
+        );
         builder.Services.AddControllers();
         builder.Services.AddHttpContextAccessor();
     }

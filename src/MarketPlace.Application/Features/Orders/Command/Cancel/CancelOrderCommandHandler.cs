@@ -40,16 +40,24 @@ public class CancelOrderCommandHandler(
         {
             return Result<CancelOrderDto>.Failure(UserError.UserNotAuthorized());
         }
+        if(order.Status == Domain.Orders.Enums.OrderStatus.Cancelled)
+        {
+            return Result<CancelOrderDto>.Failure(OrderError.OrderAlreadyCancelled());
+        }
+        if(order.Status == Domain.Orders.Enums.OrderStatus.Shipped || order.Status == Domain.Orders.Enums.OrderStatus.Delivered)
+        {
+            return Result<CancelOrderDto>.Failure(OrderError.OrderAlreadyShippedOrDelivered());
+        }
 
         order.Cancel();
-        foreach (var item in order.Items)
-        {
-            var product = await productRepository.GetByIdAsync(item.ProductId, cancellationToken);
-            if (product != null)
-            {
-                product.IncreaseStock(item.Quantity);
-            }
-        }
+        // foreach (var item in order.Items)
+        // {
+        //     var product = await productRepository.GetByIdAsync(item.ProductId, cancellationToken);
+        //     if (product != null)
+        //     {
+        //         product.IncreaseStock(item.Quantity);
+        //     }
+        // }
 
         await unitOfWork.CommitAsync(cancellationToken);
         return Result<CancelOrderDto>.Success(new CancelOrderDto(

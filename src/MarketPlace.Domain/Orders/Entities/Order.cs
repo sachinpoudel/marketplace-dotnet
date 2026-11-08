@@ -186,7 +186,11 @@ public class Order : AggregateRoot<OrderId>
         Status = OrderStatus.Shipped;
         UpdatedAt = DateTime.UtcNow;
     }
-
+  public void MarkAsRefunded()
+    {
+        Status = OrderStatus.Refunded;
+        UpdatedAt = DateTime.UtcNow;
+    }
     public Result Cancel()
     {
         if (Status is OrderStatus.Shipped or OrderStatus.Delivered or OrderStatus.Cancelled)

@@ -10,7 +10,7 @@ public record class PaymentDetailsDto
     decimal Amount,
     PaymentStatus Status,
     PaymentMethod Method,
-  
+  string RedirectUrl,
     DateTime CreatedAt
     
 );
