@@ -28,4 +28,8 @@ public static class PaymentError
     {
         return BaseError.BadRequest("Payment.NotRefunded", "The payment could not be refunded.");
     }
+    public static BaseError PaymentAmountMismatch()
+    {
+        return BaseError.BadRequest("Payment.AmountMismatch", "The payment amount does not match the expected amount.");
+    }
 }

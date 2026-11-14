@@ -77,11 +77,11 @@ public class CreatePaymentCommandHandler(
                     return Result<PaymentDetailsDto>.Failure(PaymentError.PaymentAlreadyPaid());
             }
         }
-        if(request.Method != PaymentMethod.Khalti)
+        if (request.Method != PaymentMethod.Khalti)
         {
             return Result<PaymentDetailsDto>.Failure(PaymentError.PaymentMethodNotSupported());
         }
-    
+
         var khaltiRequest = new PaymentInitiateRequest(
             order.Id.Value,
             order.TotalAmount,
@@ -92,7 +92,16 @@ public class CreatePaymentCommandHandler(
             khaltiRequest,
             cancellationToken
         );
-  
+
+        if (
+            !gatewayResponse.IsSuccess
+            || string.IsNullOrWhiteSpace(gatewayResponse.ExternalReferenceId)
+            || string.IsNullOrWhiteSpace(gatewayResponse.PaymentUrl)
+        )
+        {
+            return Result<PaymentDetailsDto>.Failure(PaymentError.PaymentGatewayError());
+        }
+
         Payment paymentResult;
         if (existingPayment is not null)
         {

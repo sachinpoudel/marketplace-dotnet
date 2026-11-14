@@ -13,10 +13,8 @@ using MediatR;
 namespace MarketPlace.Application.Features.Payments.Command.Pay;
 
 public class PayPaymentCommandHandler(
-    ICurrentUser currentUser,
     IPaymentRepository paymentRepository,
     IUnitOfWork unitOfWork,
-    ICartRepository cartRepository,
     IPaymentGateway paymentGateway,
     IOrderRepository orderRepository
 ) : IRequestHandler<PayPaymentCommand, Result<PayPaymentDto>>
@@ -83,16 +81,31 @@ public class PayPaymentCommandHandler(
 
     if (verificationResult is null || !verificationResult.IsSuccess)
     {
-        Console.WriteLine(
-            $"Payment verification failed for ExternalReferenceId: {payment.ExternalReferenceId}"
-        );
+      
         return Result<PayPaymentDto>.Failure(PaymentError.PaymentGatewayError());
     }
-
-    Console.WriteLine(
-        $"Payment verification result for ExternalReferenceId: {verificationResult.ExternalReferenceId} - IsSuccess: {verificationResult.IsSuccess}, Amount: {verificationResult.Amount}, TransactionId: {verificationResult.TransactionId}"
+    if(verificationResult.Amount != payment.Amount)
+    {
+        return Result<PayPaymentDto>.Failure(PaymentError.PaymentAmountMismatch());
+    }
+    if (!string.Equals( 
+        request.Pidx,
+        payment.ExternalReferenceId,
+        StringComparison.Ordinal))
+{
+    return Result<PayPaymentDto>.Failure(
+        PaymentError.PaymentGatewayError()
     );
-
+}
+    if(verificationResult.ExternalReferenceId != payment.ExternalReferenceId) 
+    {
+        return Result<PayPaymentDto>.Failure(PaymentError.PaymentGatewayError());
+    }
+    if(string.IsNullOrWhiteSpace(verificationResult.TransactionId))
+    {
+        return Result<PayPaymentDto>.Failure(PaymentError.PaymentGatewayError());
+    }
+   
     payment.MarkAsPaid(verificationResult.TransactionId ?? string.Empty);
     await unitOfWork.CommitAsync(cancellationToken);
 
