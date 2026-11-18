@@ -2,6 +2,8 @@ using System;
 using MaketPlace.Application.Common.Interfaces.UnitOfWork;
 using MarketPlace.Application.Common.Interfaces.Auth;
 using MarketPlace.Application.Common.Interfaces.PaymentGateway;
+using MarketPlace.Application.Common.Interfaces.PaymentGateway.Enums;
+using MarketPlace.Application.Common.Interfaces.PaymentGateway.Models;
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Features.Payments.Dtos;
 using MarketPlace.Domain.Common.BaseErrors.Errors;
@@ -58,25 +60,69 @@ public class CreatePaymentCommandHandler(
             cancellationToken
         );
 
+        // if existing payment is  not null mean that the payment is already created for this order, so we need to check if the payment is already paid or not. If the payment is already paid, we need to return an error. If the payment is not paid, we need to check if the payment is pending and has an external reference id. If it has an external reference id, we need to verify the payment with the payment gateway. If the payment is verified, we need to return an error. If the payment is not verified, we can proceed to create a new payment.
+
         if (existingPayment is not null)
         {
-            if (existingPayment.Status == Domain.Payments.Enums.PaymentStatus.Completed)
+            if (existingPayment.Status == PaymentStatus.Completed)
             {
                 return Result<PaymentDetailsDto>.Failure(PaymentError.PaymentAlreadyPaid());
             }
+
             if (
                 existingPayment.Status == PaymentStatus.Pending
-                && !string.IsNullOrEmpty(existingPayment.ExternalReferenceId)
+                && !string.IsNullOrWhiteSpace(existingPayment.ExternalReferenceId)
             )
             {
                 var check = await paymentGateway.VerifyPaymentAsync(
                     new(existingPayment.ExternalReferenceId),
                     cancellationToken
                 );
-                if (check?.IsSuccess == true)
-                    return Result<PaymentDetailsDto>.Failure(PaymentError.PaymentAlreadyPaid());
+
+                if (check is null || !check.IsSuccess)
+                {
+                    return Result<PaymentDetailsDto>.Failure(PaymentError.PaymentGatewayError());
+                }
+
+                switch (check.PaymentStatus)
+                {
+                    case GatewayPaymentStatus.Completed:
+
+                        if (
+                            check.ExternalReferenceId != existingPayment.ExternalReferenceId
+                            || check.Amount != existingPayment.Amount
+                            || string.IsNullOrWhiteSpace(check.TransactionId)
+                        )
+                        {
+                            return Result<PaymentDetailsDto>.Failure(
+                                PaymentError.PaymentGatewayError()
+                            );
+                        }
+
+                        existingPayment.MarkAsPaid(check.TransactionId);
+
+                        await unitOfWork.CommitAsync(cancellationToken);
+
+                        return Result<PaymentDetailsDto>.Failure(PaymentError.PaymentAlreadyPaid());
+
+                    case GatewayPaymentStatus.Pending:
+                        return Result<PaymentDetailsDto>.Failure(
+                            PaymentError.PaymentGatewayError()
+                        );
+
+                    case GatewayPaymentStatus.Expired:
+                    case GatewayPaymentStatus.Failed:
+
+                        break;
+
+                    default:
+                        return Result<PaymentDetailsDto>.Failure(
+                            PaymentError.PaymentGatewayError()
+                        );
+                }
             }
         }
+
         if (request.Method != PaymentMethod.Khalti)
         {
             return Result<PaymentDetailsDto>.Failure(PaymentError.PaymentMethodNotSupported());

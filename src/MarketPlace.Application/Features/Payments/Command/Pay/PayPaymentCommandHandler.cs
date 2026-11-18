@@ -2,6 +2,7 @@ using System;
 using MaketPlace.Application.Common.Interfaces.UnitOfWork;
 using MarketPlace.Application.Common.Interfaces.Auth;
 using MarketPlace.Application.Common.Interfaces.PaymentGateway;
+using MarketPlace.Application.Common.Interfaces.PaymentGateway.Models;
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Features.Payments.Dtos;
 using MarketPlace.Domain.Common.BaseErrors.Errors;

@@ -95,7 +95,7 @@ public class Payment : AggregateRoot<PaymentId>
         ExternalReferenceId = newReferenceId;
     }
 
-    public Result MarkAsRefunded(string refundTransactionId, bool isManual = false)
+    public Result MarkAsRefunded(string? refundTransactionId, bool isManual = false)
     {
         if (Status != PaymentStatus.Completed)
             throw new DomainException("Only paid payments can be refunded.");

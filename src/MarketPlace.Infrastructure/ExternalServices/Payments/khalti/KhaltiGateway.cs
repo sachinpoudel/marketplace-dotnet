@@ -1,6 +1,10 @@
 using System;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using MarketPlace.Application.Common.Interfaces.PaymentGateway;
+using MarketPlace.Application.Common.Interfaces.PaymentGateway.Enums;
+using MarketPlace.Application.Common.Interfaces.PaymentGateway.Models;
 using MarketPlace.Infrastructure.ExternalServices.Payments.khalti;
 using MarketPlace.Infrastructure.ExternalServices.Payments.khalti.Models;
 using Microsoft.Extensions.Options;
@@ -79,73 +83,106 @@ public class KhaltiGateway : IPaymentGateway
         );
     }
 
-    public async Task<PaymentRefundResponse> RefundPaymentAsync(
-        PaymentRefundRequest request,
-        CancellationToken cancellationToken = default
-    )
+public async Task<PaymentRefundResponse> RefundPaymentAsync(
+    PaymentRefundRequest request,
+    CancellationToken cancellationToken = default
+)
+{
+    using var httpRequest = new HttpRequestMessage(
+        HttpMethod.Post,
+        $"merchant-transaction/{Uri.EscapeDataString(request.TransactionId)}/refund/"
+    );
+
+    httpRequest.Headers.Authorization =
+        new AuthenticationHeaderValue("Key", _settings.SecretKey);
+
+    var response = await _httpClient.SendAsync(
+        httpRequest,
+        cancellationToken
+    );
+
+    var responseContent = await response.Content.ReadAsStringAsync(
+        cancellationToken
+    );
+
+    var khaltiResponse = JsonSerializer.Deserialize<KhaltiRefundResponse>(
+        responseContent,
+        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+    );
+   
+ 
+    if (khaltiResponse == null)
     {
-        var payload = new
-        {
-            transaction_id = request.TransactionId,
-            total_amount = (int)(request.Amount * 100), // Khalti expects Paisa (Rs * 100)
-            // mobile_number = request.MobileNumber
-        };
-        var content = new StringContent(
-            JsonSerializer.Serialize(payload),
-            System.Text.Encoding.UTF8,
-            "application/json"
+        return new PaymentRefundResponse(
+            false,
+            null,
+            responseContent
         );
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Key", _settings.SecretKey);
-        var resp = await _httpClient.PostAsync("epayment/refund/", content, cancellationToken);
-        if (!resp.IsSuccessStatusCode)
-        {
-            return new PaymentRefundResponse(false, null, "Failed to connect to Khalti");
-        }
-        var respContent = await resp.Content.ReadAsStringAsync();
-        var khaltiResponse = JsonSerializer.Deserialize<KhaltiRefundResponse>(respContent);
-        if (khaltiResponse == null || string.IsNullOrEmpty(khaltiResponse.transaction_id))
-        {
-            return new PaymentRefundResponse(false, null, "Failed to parse Khalti response");
-        }
-        return new PaymentRefundResponse(true, khaltiResponse.transaction_id);
     }
 
-    public async Task<PaymentVerifyResponse> VerifyPaymentAsync(
-        PaymentVerifyRequest request,
-        CancellationToken cancellationToken = default
-    )
+    return new PaymentRefundResponse(
+        true,
+        khaltiResponse?.transaction_id ?? null,
+        null
+    );
+}
+public async Task<PaymentVerifyResponse> VerifyPaymentAsync(
+    PaymentVerifyRequest request,
+    CancellationToken cancellationToken = default
+)
+{
+    var content = new StringContent(
+        JsonSerializer.Serialize(new { pidx = request.ExternalReferenceId }),
+        Encoding.UTF8,
+        "application/json"
+    );
+
+    _httpClient.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Key", _settings.SecretKey);
+
+    var resp = await _httpClient.PostAsync(
+        "epayment/lookup/",
+        content,
+        cancellationToken
+    );
+
+    var responseContent = await resp.Content.ReadAsStringAsync(cancellationToken);
+
+    var khaltiResponse = JsonSerializer.Deserialize<KhaltiLookupResponse>(
+        responseContent,
+        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+    );
+
+    if (khaltiResponse == null)
     {
-        var content = new StringContent(
-            JsonSerializer.Serialize(new { pidx = request.ExternalReferenceId }),
-            System.Text.Encoding.UTF8,
-            "application/json"
-        );
-        Console.WriteLine($"Khalti Verify Payment Request: {JsonSerializer.Serialize(request)}");
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Key", _settings.SecretKey);
-        var resp = await _httpClient.PostAsync("epayment/lookup/", content, cancellationToken);
-        Console.WriteLine($"Khalti Verify Payment Response Status: {resp.StatusCode}");
-        if (!resp.IsSuccessStatusCode)
-        {
-            Console.WriteLine($"Khalti Verify Payment Response: Failed to connect to Khalti");
-            return new PaymentVerifyResponse(false, 0, null, "Failed to connect to Khalti");
-        }
-        var responseContent = await resp.Content.ReadAsStringAsync();
-        var khaltiResponse = JsonSerializer.Deserialize<KhaltiLookupResponse>(responseContent);
-        Console.WriteLine(
-            $"Khalti Verify Payment Response: {JsonSerializer.Serialize(khaltiResponse)}"
-        );
-        if (khaltiResponse == null || khaltiResponse.status != "Completed")
-        {
-            return new PaymentVerifyResponse(false, 0, null, "Payment not completed");
-        }
-        decimal amount = khaltiResponse.total_amount / 100; // Convert back to Rs
         return new PaymentVerifyResponse(
-            true,
-            amount,
-            khaltiResponse.transaction_id,
-            khaltiResponse.pidx
+            false,
+            0,
+            null,
+            null,
+            "Invalid response from Khalti.",
+            GatewayPaymentStatus.Unknown
         );
     }
-}
+
+    var status = khaltiResponse.status?.ToLowerInvariant() switch
+    {
+        "completed" => GatewayPaymentStatus.Completed,
+        "pending" or "initiated" => GatewayPaymentStatus.Pending,
+        "expired" => GatewayPaymentStatus.Expired,
+        "user canceled" => GatewayPaymentStatus.Failed,
+        "refunded" => GatewayPaymentStatus.Refunded,
+        _ => GatewayPaymentStatus.Unknown
+    };
+
+    decimal amount = khaltiResponse.total_amount / 100m;
+
+    return new PaymentVerifyResponse(
+        true,
+        amount,
+        khaltiResponse.transaction_id,
+        khaltiResponse.pidx,
+        null,
+        status
+    );
+}}
