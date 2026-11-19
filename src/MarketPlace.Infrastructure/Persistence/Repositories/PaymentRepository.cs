@@ -18,7 +18,7 @@ public class PaymentRepository(ApplicationDbContext context) : IPaymentRepositor
 
     public async Task<Payment?> GetPaymentByIdAsync(PaymentId paymentId, CancellationToken cancellationToken = default)
     {
-        return await context.Payments.FindAsync(paymentId, cancellationToken);
+        return await context.Payments.FindAsync(paymentId);
     }
 
     public async Task<Payment?> GetPaymentByOrderIdAsync(OrderId orderId, CancellationToken cancellationToken = default)

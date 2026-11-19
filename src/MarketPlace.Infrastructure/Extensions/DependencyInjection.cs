@@ -53,12 +53,12 @@ public static class InfrastructureExtensions
         {
             var settings = serviceProvider.GetRequiredService<IOptions<KhaltiSettings>>().Value;
             
-            // This safely forces the base address using your appsettings value!
             client.BaseAddress = new Uri(settings.BaseUrl);
             
             client.DefaultRequestHeaders.Accept.Add(
                 new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
         });        services.AddHostedService<ExpiredReservationWorker>();
+        services.AddHostedService<PendingRefundWorker>();
 
         return services;
     }
