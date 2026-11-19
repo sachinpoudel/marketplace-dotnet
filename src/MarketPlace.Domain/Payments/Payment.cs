@@ -97,7 +97,7 @@ public class Payment : AggregateRoot<PaymentId>
 
     public Result MarkAsRefunded(string? refundTransactionId)
     {
-        if (Status != PaymentStatus.Completed)
+        if (Status != PaymentStatus.RefundPending)
             throw new DomainException("Only paid payments can be refunded.");
 
         Status = PaymentStatus.Refunded;
@@ -109,4 +109,14 @@ public class Payment : AggregateRoot<PaymentId>
         );
         return Result.Success();
     }
+
+    public void MarkAsRefundPending()
+{
+    if (Status != PaymentStatus.Completed)
+        throw new DomainException(
+            "Only completed payments can be marked for refund."
+        );
+
+    Status = PaymentStatus.RefundPending;
+}
 }

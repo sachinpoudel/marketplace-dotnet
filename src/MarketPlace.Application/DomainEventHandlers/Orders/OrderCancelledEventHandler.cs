@@ -3,6 +3,7 @@ using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Features.Payments.Command.Refund;
 using MarketPlace.Domain.Common.BaseErrors.Errors;
 using MarketPlace.Domain.Orders.Events;
+using MarketPlace.Domain.Payments.Enums;
 using MediatR;
 
 namespace MarketPlace.Application.DomainEventHandlers.Orders;
@@ -42,19 +43,18 @@ public class OrderCancelledEventHandler(
         {
             return;
         }
-        if (order.Status == Domain.Orders.Enums.OrderStatus.Pending)
+       switch (payment.Status)
         {
+            case PaymentStatus.Pending: 
             payment.MarkAsFailed();
+            break;
+
+            case PaymentStatus.Completed:
+               payment.MarkAsRefundPending();
+               break;
+                
         }
 
-        if(payment.Status == Domain.Payments.Enums.PaymentStatus.Completed)
-        {
-            await sender.Send(
-                new RefundPaymentCommand(
-                    order.Id.Value,
-                    payment.Id.Value
-                ), cancellationToken
-            );
-        }
+      
     }
 }

@@ -10,4 +10,8 @@ public interface IPaymentRepository
    Task<Payment>  CreatePaymentAsync(Payment payment, CancellationToken cancellationToken = default);
    Task<Payment?> GetPaymentByIdAsync(PaymentId paymentId, CancellationToken cancellationToken = default);
    Task<Payment?> GetPaymentByOrderIdAsync(OrderId orderId, CancellationToken cancellationToken = default);
+   Task<List<Payment>> GetPendingRefundsAsync(
+    int batchSize,
+    CancellationToken cancellationToken = default
+);
 }

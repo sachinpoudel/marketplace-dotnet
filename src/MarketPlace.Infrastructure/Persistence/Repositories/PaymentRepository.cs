@@ -2,6 +2,7 @@ using System;
 using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Domain.Orders.ValueObjects;
 using MarketPlace.Domain.Payments;
+using MarketPlace.Domain.Payments.Enums;
 using MarketPlace.Domain.Payments.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,4 +26,15 @@ public class PaymentRepository(ApplicationDbContext context) : IPaymentRepositor
         var payment = await context.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId, cancellationToken);
         return payment;
     }
+    public async Task<List<Payment>> GetPendingRefundsAsync(
+    int batchSize,
+    CancellationToken cancellationToken = default
+)
+{
+    return await context.Payments
+        .Where(p => p.Status == PaymentStatus.RefundPending)
+        .OrderBy(p => p.CreatedAt)
+        .Take(batchSize)
+        .ToListAsync(cancellationToken);
+}
 }
