@@ -6,4 +6,4 @@ using MarketPlace.Domain.Payments.ValueObjects;
 namespace MarketPlace.Domain.Payments.Events;
 
 public sealed record PaymentPaidEvent(PaymentId PaymentId, OrderId OrderId, decimal Amount, string TransactionId, DateTime PaidAt) : IDomainEvent;
-public sealed record PaymentRefundedEvent(PaymentId PaymentId, OrderId OrderId, decimal Amount, string RefundTransactionId, DateTime RefundAt, bool IsManual ) : IDomainEvent;
+public sealed record PaymentRefundedEvent(PaymentId PaymentId, OrderId OrderId, decimal Amount, string? RefundTransactionId, DateTime RefundAt ) : IDomainEvent;

@@ -10,8 +10,7 @@ public sealed class PaymentRefundedEventHandler (IOrderRepository orderRepositor
 {
     public async  Task Handle(PaymentRefundedEvent notification, CancellationToken cancellationToken)
     {
-       if (notification.IsManual)
-    {
+   
         var order = await orderRepository.GetOrderByIdAsync(notification.OrderId, cancellationToken);
         if (order is not null && order.Status != OrderStatus.Cancelled)
         {
@@ -19,4 +18,4 @@ public sealed class PaymentRefundedEventHandler (IOrderRepository orderRepositor
         }
     }
     }
-}
+

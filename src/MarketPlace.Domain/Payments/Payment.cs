@@ -95,7 +95,7 @@ public class Payment : AggregateRoot<PaymentId>
         ExternalReferenceId = newReferenceId;
     }
 
-    public Result MarkAsRefunded(string? refundTransactionId, bool isManual = false)
+    public Result MarkAsRefunded(string? refundTransactionId)
     {
         if (Status != PaymentStatus.Completed)
             throw new DomainException("Only paid payments can be refunded.");
@@ -103,10 +103,9 @@ public class Payment : AggregateRoot<PaymentId>
         Status = PaymentStatus.Refunded;
         RefundTransactionId = refundTransactionId;
         RefundAt = DateTime.UtcNow;
-        IsManual = isManual;
 
         RaiseDomainEvent(
-            new PaymentRefundedEvent(Id, OrderId, Amount, RefundTransactionId!, RefundAt, isManual)
+            new PaymentRefundedEvent(Id, OrderId, Amount, RefundTransactionId, RefundAt)
         );
         return Result.Success();
     }

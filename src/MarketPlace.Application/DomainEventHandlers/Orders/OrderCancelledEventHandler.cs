@@ -52,8 +52,7 @@ public class OrderCancelledEventHandler(
             await sender.Send(
                 new RefundPaymentCommand(
                     order.Id.Value,
-                    payment.Id.Value,
-                    false // Not a manual refund, it's triggered by order cancellation
+                    payment.Id.Value
                 ), cancellationToken
             );
         }
