@@ -1,11 +1,15 @@
 using System.Xml.Serialization;
 using MaketPlace.Application.Common.Interfaces.UnitOfWork;
 using MarketPlace.Application.Common.Interfaces.Auth;
+using MarketPlace.Application.Common.Interfaces.Email;
 using MarketPlace.Application.Common.Interfaces.PaymentGateway;
 using MarketPlace.Application.Common.Interfaces.Query;
 using MarketPlace.Application.Common.Interfaces.Repositories;
+using MarketPlace.Application.Features.Orders.Jobs;
 using MarketPlace.Infrastructure.BackgroundJobs;
+using MarketPlace.Infrastructure.BackgroundJobs.Email;
 using MarketPlace.Infrastructure.Extensions;
+using MarketPlace.Infrastructure.ExternalServices.Email;
 using MarketPlace.Infrastructure.ExternalServices.Payments.khalti;
 using MarketPlace.Infrastructure.Identity.Models;
 using MarketPlace.Infrastructure.Identity.Services;
@@ -48,16 +52,22 @@ public static class InfrastructureExtensions
         services.AddScoped<IAuthService, IdentityAuthService>();
         services.AddScoped<JwtTokenService>();
         services.AddScoped<IdentitySeeder>();
+       services.AddScoped<IEmailService, SmtpEmailService>();
+        services.AddScoped<IOrderConfirmationEmailJob, OrderConfirmationEmailJob>();
 
-    services.AddHttpClient<IPaymentGateway, KhaltiGateway>((serviceProvider, client) =>
-        {
-            var settings = serviceProvider.GetRequiredService<IOptions<KhaltiSettings>>().Value;
-            
-            client.BaseAddress = new Uri(settings.BaseUrl);
-            
-            client.DefaultRequestHeaders.Accept.Add(
-                new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-        });        services.AddHostedService<ExpiredReservationWorker>();
+        services.AddHttpClient<IPaymentGateway, KhaltiGateway>(
+            (serviceProvider, client) =>
+            {
+                var settings = serviceProvider.GetRequiredService<IOptions<KhaltiSettings>>().Value;
+
+                client.BaseAddress = new Uri(settings.BaseUrl);
+
+                client.DefaultRequestHeaders.Accept.Add(
+                    new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json")
+                );
+            }
+        );
+        services.AddHostedService<ExpiredReservationWorker>();
         services.AddHostedService<PendingRefundWorker>();
 
         return services;

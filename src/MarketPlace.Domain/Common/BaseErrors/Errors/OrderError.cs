@@ -28,5 +28,9 @@ public static class OrderError
     {
         return BaseError.Conflict("Order Already Shipped or Delivered", "The order you are trying to cancel has already been shipped or delivered.");
     }
+    public static BaseError OrderNotConfirmed()
+    {
+        return BaseError.Conflict("Order Not Confirmed", "The order you are trying to process has not been confirmed yet.");
+    }
     
 }

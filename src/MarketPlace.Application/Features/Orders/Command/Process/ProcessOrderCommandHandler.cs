@@ -27,6 +27,10 @@ public class ProcessOrderCommandHandler(ICurrentUser currentUser, IOrderReposito
         {
             return Result<Unit>.Failure(UserError.UserNotAuthorized());
         }
+        if(order.Status != Domain.Orders.Enums.OrderStatus.Confirmed)
+        {
+            return Result<Unit>.Failure(OrderError.OrderNotConfirmed());
+        }
         order.StartProcessing();
         await unitOfWork.CommitAsync(cancellationToken);
         return Result<Unit>.Success(Unit.Value);

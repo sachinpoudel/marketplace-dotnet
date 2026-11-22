@@ -4,12 +4,14 @@ using Microsoft.AspNetCore.Http;
 
 namespace MarketPlace.Infrastructure.Identity.Services;
 
-public class CurrentUserService( IHttpContextAccessor httpContextAccessor) : ICurrentUser
+public sealed class CurrentUserService( IHttpContextAccessor httpContextAccessor) : ICurrentUser
 {
     public string? UserId => httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value ?? httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
 
     public string? UserName => httpContextAccessor.HttpContext?.User?.Identity?.Name;
+
+    public string? Email => httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
 
 
     public bool IsAuthenticated => httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;

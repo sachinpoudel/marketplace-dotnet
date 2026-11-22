@@ -1,0 +1,20 @@
+CKERIGNORE
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.git/
+**/.gitignore
+ 
+# local-only config — never bake secrets into the image
+**/appsettings.Development.json
+**/.env
+**/.env.local
+ 
+# docker files themselves
+Dockerfile
+docker-compose*.yml
+.dockerignore
+ 
+**/*.md
+**/*.user

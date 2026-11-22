@@ -75,7 +75,6 @@ public class RefundPaymentCommandHandler(
             return Result<RefundPaymentDto>.Failure(
                 UserError.UserNotAuthorized());
 
-        // Persist RefundPending before contacting Khalti.
         if (payment.Status == PaymentStatus.Completed)
         {
             payment.MarkAsRefundPending();

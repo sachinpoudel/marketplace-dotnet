@@ -167,6 +167,7 @@ public class Order : AggregateRoot<OrderId>
 
         Status = OrderStatus.Confirmed;
         UpdatedAt = DateTime.UtcNow;
+        RaiseDomainEvent(new OrderPlacedEvent(Id));
     }
 
     public void StartProcessing()
