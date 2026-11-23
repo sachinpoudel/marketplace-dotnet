@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 namespace MarketPlace.Infrastructure.Identity.Services;
 
 public class IdentityAuthService(
-    IOptions<JwtOptions> _jwtOptions,
+    IOptions<JwtSettings> _jwtSettings,
     UserManager<ApplicationUser> _userManager,
     RoleManager<IdentityRole<Guid>> _roleManager,
     JwtTokenService _jwtService,
@@ -137,7 +137,7 @@ public class IdentityAuthService(
         var roles = await _userManager.GetRolesAsync(user);
         var newRefreshToken = _jwtService.CreateRefreshToken(); 
         var newRefreshTokenHash = _jwtService.HashToken(newRefreshToken);
-        var expiresAtUtc = DateTime.UtcNow.AddDays(_jwtOptions.Value.RefreshTokenDays);
+        var expiresAtUtc = DateTime.UtcNow.AddDays(_jwtSettings.Value.RefreshTokenDays);
 
         refreshToken.Rotate(refreshToken, newRefreshTokenHash, expiresAtUtc, request.IpAddress);
         _dbContext.RefreshTokens.Add(
@@ -148,14 +148,14 @@ public class IdentityAuthService(
         var accessToken = _jwtService.CreateAccessToken(
             user,
             roles,
-            DateTimeOffset.UtcNow.AddMinutes(_jwtOptions.Value.AccessTokenMinutes)
+            DateTimeOffset.UtcNow.AddMinutes(_jwtSettings.Value.AccessTokenMinutes)
         );
 
         return new AuthSessionData(
             user.Id,
             user.Email!,
             accessToken,
-            DateTimeOffset.UtcNow.AddMinutes(_jwtOptions.Value.AccessTokenMinutes),
+            DateTimeOffset.UtcNow.AddMinutes(_jwtSettings.Value.AccessTokenMinutes),
             newRefreshToken,
             expiresAtUtc
         );
@@ -168,7 +168,7 @@ public class IdentityAuthService(
     {
         var roles = await _userManager.GetRolesAsync(user);
         var refreshToken = _jwtService.CreateRefreshToken();
-        var refreshTokenExpiresAtUtc = DateTime.UtcNow.AddDays(_jwtOptions.Value.RefreshTokenDays);
+        var refreshTokenExpiresAtUtc = DateTime.UtcNow.AddDays(_jwtSettings.Value.RefreshTokenDays);
         var refreshTokenHash = _jwtService.HashToken(refreshToken);
         var ipAddress = httpContextProvider.GetCurrentIpAddress() ?? "Unknown";
         _dbContext.RefreshTokens.Add(

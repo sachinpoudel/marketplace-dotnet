@@ -18,7 +18,7 @@ public static class HangfireExtension
         services.AddHangfire((provider,config) =>
         {
             var connString = provider.GetRequiredService<IOptions<ConnectionSettings>>().Value.ConnectionString;
-            var hangfireSettings = provider.GetRequiredService<IOptions<EmailSettings>>().Value;
+            var hangfireSettings = provider.GetRequiredService<IOptions<HangfireSettings>>().Value;
 
                config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
@@ -38,7 +38,6 @@ public static class HangfireExtension
             {
                 options.WorkerCount = hangfireSettings?.WorkerCount ?? 1;
             });
-            services.AddScoped<IBackgroundJobService, HangfireJobService>();
         });
         return services;
     }

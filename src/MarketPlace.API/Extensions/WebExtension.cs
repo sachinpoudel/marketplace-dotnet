@@ -45,10 +45,12 @@ public static class WebExtension
                     $"{ctx.HttpContext.Request.Method} {ctx.HttpContext.Request.Path}";
             };
         });
-        builder.Services.Configure<ConnStringOption>(
-            builder.Configuration.GetSection("ConnectionStrings")
+        builder.Services.Configure<ConnectionSettings>(
+            builder.Configuration.GetSection("ConnectionSettings")
         );
-        builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
+        builder.Services.Configure<JwtSettings>(
+            builder.Configuration.GetSection("JwtSettings")
+        );
         builder.Services.Configure<KhaltiSettings>(
             builder.Configuration.GetSection("KhaltiSettings")
         );

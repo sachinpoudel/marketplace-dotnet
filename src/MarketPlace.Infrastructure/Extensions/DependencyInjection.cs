@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using MaketPlace.Application.Common.Interfaces.UnitOfWork;
 using MarketPlace.Application.Common.Interfaces.Auth;
+using MarketPlace.Application.Common.Interfaces.BackgroundJobs;
 using MarketPlace.Application.Common.Interfaces.Email;
 using MarketPlace.Application.Common.Interfaces.PaymentGateway;
 using MarketPlace.Application.Common.Interfaces.Query;
@@ -8,6 +9,7 @@ using MarketPlace.Application.Common.Interfaces.Repositories;
 using MarketPlace.Application.Features.Orders.Jobs;
 using MarketPlace.Infrastructure.BackgroundJobs;
 using MarketPlace.Infrastructure.BackgroundJobs.Email;
+using MarketPlace.Infrastructure.BackgroundJobs.Hangfire;
 using MarketPlace.Infrastructure.Extensions;
 using MarketPlace.Infrastructure.ExternalServices.Email;
 using MarketPlace.Infrastructure.ExternalServices.Payments.khalti;
@@ -35,6 +37,7 @@ public static class InfrastructureExtensions
             .AddDefaultTokenProviders();
 
         services.AddJwt();
+        services.AddHangfire();
 
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<IHttpContextProvider, HttpContextProvider>();
@@ -54,6 +57,8 @@ public static class InfrastructureExtensions
         services.AddScoped<IdentitySeeder>();
        services.AddScoped<IEmailService, SmtpEmailService>();
         services.AddScoped<IOrderConfirmationEmailJob, OrderConfirmationEmailJob>();
+                    services.AddScoped<IBackgroundJobService, HangfireJobService>();
+
 
         services.AddHttpClient<IPaymentGateway, KhaltiGateway>(
             (serviceProvider, client) =>

@@ -13,7 +13,7 @@ public static class DatabaseExtension
     {
         services.AddDbContextPool<ApplicationDbContext>((provider, options) =>
         {
-            var connString = provider.GetRequiredService<IOptions<ConnStringOption>>().Value.ConnectionString;
+            var connString = provider.GetRequiredService<IOptions<ConnectionSettings>>().Value.ConnectionString;
 
             if (string.IsNullOrWhiteSpace(connString))
             {

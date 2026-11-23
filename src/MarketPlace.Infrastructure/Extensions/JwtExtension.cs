@@ -27,15 +27,15 @@ public static class JwtExtension
 
         services
             .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-            .Configure<IOptions<JwtOptions>>(
-                (options, jwtOptions) =>
+            .Configure<IOptions<JwtSettings>>(
+                (options, jwtSettings) =>
                 {
-                    var jwtSettings = jwtOptions.Value;
+                    var jwtSetting = jwtSettings.Value;
 
                     if (
-                        string.IsNullOrEmpty(jwtSettings.SigningKey)
-                        || string.IsNullOrEmpty(jwtSettings.Issuer)
-                        || string.IsNullOrEmpty(jwtSettings.Audience)
+                        string.IsNullOrEmpty(jwtSetting.SigningKey)
+                        || string.IsNullOrEmpty(jwtSetting.Issuer)
+                        || string.IsNullOrEmpty(jwtSetting.Audience)
                     )
                     {
                         throw new InvalidOperationException(
@@ -44,7 +44,7 @@ public static class JwtExtension
                     }
 
                     var secretKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtSettings.SigningKey)
+                        Encoding.UTF8.GetBytes(jwtSetting.SigningKey)
                     );
 
                     options.RequireHttpsMetadata = false;
@@ -55,8 +55,8 @@ public static class JwtExtension
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtSettings.Issuer,
-                        ValidAudience = jwtSettings.Audience,
+                        ValidIssuer = jwtSetting.Issuer,
+                        ValidAudience = jwtSetting.Audience,
                         IssuerSigningKey = secretKey,
                         ClockSkew = TimeSpan.Zero,
                     };

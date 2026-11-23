@@ -13,9 +13,9 @@ namespace MarketPlace.Infrastructure.Identity.Services;
 
 public sealed class JwtTokenService
 {
-    private readonly JwtOptions _options;
+    private readonly JwtSettings _options;
 
-    public JwtTokenService(IOptions<JwtOptions> options)
+    public JwtTokenService(IOptions<JwtSettings> options)
     {
         _options = options.Value;
     }

@@ -18,11 +18,11 @@ try
     builder.Services.AddDatabase();
     builder.Services.AddApplication();
     builder.AddPresentation();
+   
     builder.Services.AddOpenApi();
 
     var app = builder.Build();
 
-    // await app.Services.InitializeDatabaseAsync();
     await app.Services.SeedIdentityRolesAsync();
     if (app.Environment.IsDevelopment())
     {
