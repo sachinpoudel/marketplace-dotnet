@@ -9,15 +9,16 @@ public sealed class ApplicationDbContextFactory
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
+
+
+        
         var configuration = new ConfigurationBuilder()
             .SetBasePath(GetApiProjectPath())
             .AddJsonFile("appsettings.json", optional: false)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
-        var connectionString =
-            configuration.GetConnectionString("ConnectionString");
-
+  var connectionString = configuration["ConnectionSettings:ConnectionString"];
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new InvalidOperationException(

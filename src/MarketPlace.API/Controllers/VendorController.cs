@@ -11,7 +11,6 @@ namespace MarketPlace.API.Controllers;
 public class VendorController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
-    [Authorize]
     public async Task<IActionResult> CreateVendor(
         CreateVendorCommand request,
         CancellationToken cancellationToken

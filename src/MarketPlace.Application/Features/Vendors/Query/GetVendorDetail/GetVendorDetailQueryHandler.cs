@@ -40,7 +40,7 @@ public class GetVendorDetailQueryHandler(
         vendor.LegalName,
         vendor.TradeName,
         vendor.Description,
-        vendor.ProfileUrl,
+        vendor.ProfileUrl.Url,
         vendor.ContactEmail,
         vendor.BusinessAddress
     )

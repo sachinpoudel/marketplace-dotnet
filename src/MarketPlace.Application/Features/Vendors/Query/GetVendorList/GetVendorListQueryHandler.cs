@@ -21,7 +21,7 @@ public class GetVendorListQueryHandler(IVendorRepository vendorRepository) : IRe
                 v.LegalName,
                 v.TradeName,
                 v.Description,
-                v.ProfileUrl,
+                v.ProfileUrl.Url,
                 v.ContactEmail,
             
               v.BusinessAddress

@@ -56,7 +56,7 @@ public class UpdateVendorCommandHandler(
                 vendor.LegalName,
                 vendor.TradeName,
                 vendor.Description,
-                vendor.ProfileUrl,
+                vendor.ProfileUrl.Url,
                 vendor.ContactEmail,
                 vendor.BusinessAddress
             )

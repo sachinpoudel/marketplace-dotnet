@@ -1,4 +1,8 @@
+using MarketPlace.API.Extensions;
 using MarketPlace.API.Handlers;
+using MarketPlace.Infrastructure.BackgroundJobs.Hangfire;
+using MarketPlace.Infrastructure.Extensions;
+using MarketPlace.Infrastructure.ExternalServices.Email;
 using MarketPlace.Infrastructure.ExternalServices.Payments.khalti;
 using MarketPlace.Infrastructure.Persistence.Options;
 using Serilog;
@@ -53,7 +57,17 @@ public static class WebExtension
         );
         builder.Services.Configure<KhaltiSettings>(
             builder.Configuration.GetSection("KhaltiSettings")
+
         );
+        builder.Services.Configure<EmailSettings>(
+            builder.Configuration.GetSection("EmailSettings")
+        );
+        builder.Services.Configure<HangfireSettings>(
+            builder.Configuration.GetSection("HangfireSettings")
+        );
+
+        builder.Services.AddHealthCheckServices();
+        builder.Services.AddObervability();
         builder.Services.AddControllers();
         builder.Services.AddHttpContextAccessor();
     }

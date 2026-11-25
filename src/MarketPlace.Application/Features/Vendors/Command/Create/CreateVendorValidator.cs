@@ -18,11 +18,7 @@ public class CreateVendorValidator : AbstractValidator<CreateVendorCommand>
         RuleFor(v => v.Description)
             .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
 
-        RuleFor(v => v.ProfileUrl)
-            .MaximumLength(200).WithMessage("Profile URL must not exceed 200 characters.")
-            .Must(uri => Uri.IsWellFormedUriString(uri, UriKind.Absolute))
-            .When(v => !string.IsNullOrWhiteSpace(v.ProfileUrl))
-            .WithMessage("Profile URL must be a valid URL.");
+      
 
         RuleFor(v => v.BusinessAddress)
             .NotEmpty().WithMessage("Business address is required.")

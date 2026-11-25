@@ -34,5 +34,9 @@ namespace MarketPlace.Domain.Common.BaseErrors.Errors;
     {
         return BaseError.Forbidden("Vendor not owned by user.", "The specified vendor is not owned by the current user.");
     }
+    public static BaseError VendorCreationFailed()
+    {
+        return BaseError.InternalServerError("Vendor creation failed.", "An error occurred while creating the vendor.");
+    }
     
 }

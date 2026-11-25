@@ -8,7 +8,7 @@ public record CreateVendorCommand(
     string LegalName,
     string TradeName,
     string Description,
-    string? ProfileUrl,
+    IEnumerable<ImageUploadCommand> ProfileUrl,
     string BusinessAddress,
     string ContactEmail
 ) : IRequest<Result<VendorDetailDto>>;

@@ -37,7 +37,7 @@ public sealed class Product : AggregateRoot<ProductId>, ISoftDeletable
     public DateTime UpdatedAt { get; private set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedOnUtc { get; set; }
-    public int AvailableQuantity => StockQuantity - ReservedStockQuantity;
+    public int AvailableQuantity {get; private set;}
 
     private Product(
         ProductId id,

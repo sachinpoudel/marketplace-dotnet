@@ -47,7 +47,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.CreatedAt).IsRequired();
         builder.Property(p => p.UpdatedAt).IsRequired();
         builder.Property(p => p.DeletedOnUtc).IsRequired(false);
-        builder.Property( p => p.AvailableQuantity).HasComputedColumnSql("[StockQuantity] - [ReservedStockQuantity]");
+        builder.Property(p => p.AvailableQuantity).IsRequired();
+       
 
         builder.Property<uint>("xmin").IsRowVersion(); //this line will create a shadow property called "xmin" that will be used for optimistic concurrency control. The IsRowVersion() method tells EF Core to treat this property as a row version, which means that it will automatically be updated by the database whenever the row is updated. This allows EF Core to detect when a row has been modified by another user and throw a DbUpdateConcurrencyException if a conflict occurs.
         builder

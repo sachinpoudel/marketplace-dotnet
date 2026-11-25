@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MarketPlace.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class wahtt : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -101,6 +101,7 @@ namespace MarketPlace.Infrastructure.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    AvailableQuantity = table.Column<int>(type: "integer", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false),
                     Tags = table.Column<string>(type: "jsonb", nullable: true)
                 },
@@ -278,7 +279,11 @@ namespace MarketPlace.Infrastructure.Migrations
                     Amount = table.Column<decimal>(type: "numeric", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Method = table.Column<int>(type: "integer", nullable: false),
+                    ExternalReferenceId = table.Column<string>(type: "text", nullable: true),
                     TransactionId = table.Column<string>(type: "text", nullable: true),
+                    RefundTransactionId = table.Column<string>(type: "text", nullable: true),
+                    IsManual = table.Column<bool>(type: "boolean", nullable: false),
+                    RefundAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     PaidAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },

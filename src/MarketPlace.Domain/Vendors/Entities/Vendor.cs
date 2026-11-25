@@ -15,8 +15,7 @@ public sealed class Vendor : AggregateRoot<VendorId>
     public string LegalName { get; private set; } = string.Empty;
     public string TradeName { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
-    public string? ProfileUrl { get; private set; } = string.Empty;
-
+    public ProfileImage? ProfileUrl { get; private set; }   
     public bool IsDeleted { get; private set; }
     public VendorStatus Status { get; private set; } = VendorStatus.Inactive;
 
@@ -35,7 +34,6 @@ public sealed class Vendor : AggregateRoot<VendorId>
         string legalName,
         string tradeName,
         string description,
-        string profileUrl,
         VendorStatus status,
         string businessAddress,
         string contactEmail
@@ -46,7 +44,6 @@ public sealed class Vendor : AggregateRoot<VendorId>
         LegalName = legalName;
         TradeName = tradeName;
         Description = description;
-        ProfileUrl = profileUrl;
         Status = status;
         BusinessAddress = businessAddress;
         ContactEmail = contactEmail;
@@ -59,7 +56,7 @@ public sealed class Vendor : AggregateRoot<VendorId>
         string legalName,
         string tradeName,
         string description,
-        string profileUrl,
+        
         string businessAddress,
         string contactEmail
     ) // status param removed
@@ -76,7 +73,6 @@ public sealed class Vendor : AggregateRoot<VendorId>
             legalName,
             tradeName,
             description,
-            profileUrl,
             VendorStatus.Active,
             businessAddress,
             contactEmail
@@ -86,9 +82,10 @@ public sealed class Vendor : AggregateRoot<VendorId>
         return Result<Vendor>.Success(vendor);
     }
 
-    public Result UpdateProfile(string profileUrl)
+    public Result UploadProfile(ProfileImage profileUrl
+        )
     {
-        if (string.IsNullOrWhiteSpace(profileUrl))
+        if (profileUrl == null)
             return Result.Failure(VendorError.VendorProfileUrlIsInvalid());
 
         ProfileUrl = profileUrl;

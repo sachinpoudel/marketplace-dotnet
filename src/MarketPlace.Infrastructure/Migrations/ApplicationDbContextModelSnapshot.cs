@@ -203,8 +203,10 @@ namespace MarketPlace.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ExternalReferenceId")
-                        .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsManual")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("Method")
                         .HasColumnType("integer");
@@ -214,6 +216,12 @@ namespace MarketPlace.Infrastructure.Migrations
 
                     b.Property<DateTime>("PaidAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("RefundAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RefundTransactionId")
+                        .HasColumnType("text");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -235,6 +243,9 @@ namespace MarketPlace.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("AvailableQuantity")
+                        .HasColumnType("integer");
 
                     b.Property<string>("CategoryIds")
                         .IsRequired()

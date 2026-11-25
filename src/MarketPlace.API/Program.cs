@@ -1,4 +1,5 @@
 using MarketPlace.Api.Extensions;
+using MarketPlace.API.Extensions;
 using MarketPlace.Application.Extensions;
 using MarketPlace.Infrastructure;
 using MarketPlace.Infrastructure.BackgroundJobs;
@@ -13,12 +14,11 @@ try
     Log.Information("Starting web host");
     var builder = WebApplication.CreateBuilder(args);
 
-
     builder.Services.AddInfrastructure();
     builder.Services.AddDatabase();
     builder.Services.AddApplication();
     builder.AddPresentation();
-   
+
     builder.Services.AddOpenApi();
 
     var app = builder.Build();
@@ -35,6 +35,8 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
+    app.MapHealthCheckEndpoint();
+    app.MapPrometheusScrapingEndpoint();
     app.MapGet("/", () => "Hello World!");
 
     app.Run();

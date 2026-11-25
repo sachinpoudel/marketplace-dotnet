@@ -16,7 +16,13 @@ public static class UserError
             "An error occurred while creating the user."
         );
     }
-
+  public static BaseError FailedToUploadProfilePicture()
+    {
+        return BaseError.InternalServerError(
+            "Failed to upload profile picture.",
+            "An error occurred while uploading the profile picture."
+        );
+    }
     public static BaseError InvalidUserCredentials()
     {
         return BaseError.BadRequest(

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MarketPlace.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20261106163609_ss")]
-    partial class ss
+    [Migration("20261123114206_wahtt")]
+    partial class wahtt
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -206,8 +206,10 @@ namespace MarketPlace.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ExternalReferenceId")
-                        .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsManual")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("Method")
                         .HasColumnType("integer");
@@ -217,6 +219,12 @@ namespace MarketPlace.Infrastructure.Migrations
 
                     b.Property<DateTime>("PaidAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("RefundAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RefundTransactionId")
+                        .HasColumnType("text");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -238,6 +246,9 @@ namespace MarketPlace.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("AvailableQuantity")
+                        .HasColumnType("integer");
 
                     b.Property<string>("CategoryIds")
                         .IsRequired()
