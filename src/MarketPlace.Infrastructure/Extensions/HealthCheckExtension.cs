@@ -2,7 +2,6 @@ using System;
 using MarketPlace.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
- using Microsoft.Extensions.DependencyInjection;
 
 namespace MarketPlace.Infrastructure.Extensions;
 

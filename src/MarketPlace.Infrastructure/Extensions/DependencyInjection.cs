@@ -24,7 +24,9 @@ using MarketPlace.Infrastructure.Persistence.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
+using Polly;
 
 namespace MarketPlace.Infrastructure.Extensions;
 
@@ -57,27 +59,92 @@ public static class InfrastructureExtensions
         services.AddScoped<IAuthService, IdentityAuthService>();
         services.AddScoped<JwtTokenService>();
         services.AddScoped<IdentitySeeder>();
-       services.AddScoped<IEmailService, SmtpEmailService>();
+        services.AddScoped<IEmailService, SmtpEmailService>();
         services.AddScoped<IOrderConfirmationEmailJob, OrderConfirmationEmailJob>();
-                    services.AddScoped<IBackgroundJobService, HangfireJobService>();
-                    services.AddScoped<IImageStorage, CloudinaryStorageService>();
+        services.AddScoped<IBackgroundJobService, HangfireJobService>();
+        services.AddScoped<IImageStorage, CloudinaryStorageService>();
 
+        services
+            .AddHttpClient<IPaymentGateway, KhaltiGateway>(
+                (serviceProvider, client) =>
+                {
+                    var settings = serviceProvider
+                        .GetRequiredService<IOptions<KhaltiSettings>>()
+                        .Value;
 
-        services.AddHttpClient<IPaymentGateway, KhaltiGateway>(
-            (serviceProvider, client) =>
+                    client.BaseAddress = new Uri(settings.BaseUrl);
+
+                    client.DefaultRequestHeaders.Accept.Add(
+                        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(
+                            "application/json"
+                        )
+                    );
+                }
+            )
+            .AddStandardResilienceHandler(options =>
             {
-                var settings = serviceProvider.GetRequiredService<IOptions<KhaltiSettings>>().Value;
+                options.Retry.DisableForUnsafeHttpMethods();
+                ConfigureKhaltiResilience(options);
+            });
 
-                client.BaseAddress = new Uri(settings.BaseUrl);
+        services
+            .AddHttpClient(
+                "KhaltiLookup",
+                (serviceProvider, client) =>
+                {
+                    var settings = serviceProvider
+                        .GetRequiredService<IOptions<KhaltiSettings>>()
+                        .Value;
 
-                client.DefaultRequestHeaders.Accept.Add(
-                    new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json")
-                );
-            }
-        );
+                    client.BaseAddress = new Uri(settings.BaseUrl);
+
+                    client.DefaultRequestHeaders.Accept.Add(
+                        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(
+                            "application/json"
+                        )
+                    );
+                }
+            )
+            .AddStandardResilienceHandler(options =>
+            {
+                options.Retry.MaxRetryAttempts = 2;
+                options.Retry.Delay = TimeSpan.FromSeconds(1);
+                options.Retry.BackoffType = DelayBackoffType.Exponential;
+                options.Retry.UseJitter = true;
+
+                ConfigureKhaltiResilience(options);
+            });
+
         services.AddHostedService<ExpiredReservationWorker>();
         services.AddHostedService<PendingRefundWorker>();
 
         return services;
     }
+
+    private static void ConfigureKhaltiResilience(HttpStandardResilienceOptions options)
+    {
+        options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(20);
+        options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(8);
+
+        options.CircuitBreaker.FailureRatio = 0.5;
+        options.CircuitBreaker.MinimumThroughput = 5;
+        options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+        options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(10);
+    }
 }
+// Lookup gets at most 2 retries after the initial attempt.
+
+
+
+//Retry delay uses exponential backoff with jitter.
+
+
+
+//Each attempt has an 8-second timeout.
+
+
+//The entire operation, including retries, has a 20-second timeout//.
+
+
+
+// The circuit breaker opens when at least 5 requests have been observed in its 30-second sampling window and at least 50% fail. It then stays open for 10 seconds.

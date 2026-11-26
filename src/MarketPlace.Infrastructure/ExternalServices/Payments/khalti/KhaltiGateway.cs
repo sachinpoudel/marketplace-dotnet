@@ -15,11 +15,13 @@ public class KhaltiGateway : IPaymentGateway
 {
     private readonly HttpClient _httpClient;
     private readonly KhaltiSettings _settings; // Injected via IOptions
+    private readonly HttpClient _lookupHttpClient;
 
-    public KhaltiGateway(HttpClient httpClient, IOptions<KhaltiSettings> settings)
+    public KhaltiGateway(HttpClient httpClient, IHttpClientFactory httpClientFactory, IOptions<KhaltiSettings> settings)
     {
         _httpClient = httpClient;
         _settings = settings.Value;
+        _lookupHttpClient = httpClientFactory.CreateClient("KhaltiLookup");
     }
 
     public async Task<PaymentInitiateResponse> InitiatePaymentAsync(
@@ -48,14 +50,16 @@ public class KhaltiGateway : IPaymentGateway
             "application/json"
         );
 
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Key", _settings.SecretKey);
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "epayment/lookup/");
 
-        var response = await _httpClient.PostAsync(
-            "epayment/initiate/",
-            content,
-            cancellationToken
+        httpRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+            "Key",
+            _settings.SecretKey
         );
+
+        httpRequest.Content = content;
+
+        var response = await _lookupHttpClient.SendAsync(httpRequest, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             return new PaymentInitiateResponse(false, null, null, "Failed to connect to Khalti");
@@ -134,12 +138,27 @@ public class KhaltiGateway : IPaymentGateway
             "application/json"
         );
 
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+
+       using  var  httpRequest = new HttpRequestMessage(HttpMethod.Post, "epayment/lookup/");
+
+   httpRequest.Headers.Authorization = new AuthenticationHeaderValue(
             "Key",
             _settings.SecretKey
         );
+        httpRequest.Content = content;
 
-        var resp = await _httpClient.PostAsync("epayment/lookup/", content, cancellationToken);
+        var resp = await _httpClient.SendAsync(httpRequest, cancellationToken);
+        if(!resp.IsSuccessStatusCode)
+        {
+            return new PaymentVerifyResponse(
+                false,
+                0,
+                null,
+                null,
+                $"Failed to connect to Khalti: {resp.ReasonPhrase}",
+                GatewayPaymentStatus.Unknown
+            );
+        }
 
         var responseContent = await resp.Content.ReadAsStringAsync(cancellationToken);
 
