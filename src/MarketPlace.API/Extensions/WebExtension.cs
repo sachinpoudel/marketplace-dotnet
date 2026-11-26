@@ -36,6 +36,25 @@ public static class WebExtension
                 }
             );
         });
+   builder.Services.AddAuthorization(options =>
+   {
+       options.AddPolicy(
+           "AdminOnly",
+           policy => policy.RequireRole("Admin")
+       );
+       options.AddPolicy(
+           "VendorOnly",
+           policy => policy.RequireRole("Vendor")
+       );
+
+       options.AddPolicy(
+           "CustomerOnly",
+           policy => policy.RequireRole("Customer")
+       );
+   });
+
+
+
 
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
         builder.Services.AddProblemDetails(options =>
@@ -52,12 +71,9 @@ public static class WebExtension
         builder.Services.Configure<ConnectionSettings>(
             builder.Configuration.GetSection("ConnectionSettings")
         );
-        builder.Services.Configure<JwtSettings>(
-            builder.Configuration.GetSection("JwtSettings")
-        );
+        builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
         builder.Services.Configure<KhaltiSettings>(
             builder.Configuration.GetSection("KhaltiSettings")
-
         );
         builder.Services.Configure<EmailSettings>(
             builder.Configuration.GetSection("EmailSettings")

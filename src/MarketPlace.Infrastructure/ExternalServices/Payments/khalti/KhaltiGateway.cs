@@ -50,7 +50,7 @@ public class KhaltiGateway : IPaymentGateway
             "application/json"
         );
 
-        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "epayment/lookup/");
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "epayment/initiate/");
 
         httpRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
             "Key",
@@ -59,7 +59,7 @@ public class KhaltiGateway : IPaymentGateway
 
         httpRequest.Content = content;
 
-        var response = await _lookupHttpClient.SendAsync(httpRequest, cancellationToken);
+        var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             return new PaymentInitiateResponse(false, null, null, "Failed to connect to Khalti");
@@ -147,7 +147,7 @@ public class KhaltiGateway : IPaymentGateway
         );
         httpRequest.Content = content;
 
-        var resp = await _httpClient.SendAsync(httpRequest, cancellationToken);
+        var resp = await _lookupHttpClient.SendAsync(httpRequest, cancellationToken);
         if(!resp.IsSuccessStatusCode)
         {
             return new PaymentVerifyResponse(
